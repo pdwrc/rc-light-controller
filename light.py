@@ -5,6 +5,7 @@ except ModuleNotFoundError:
 
 import time
 import vehicle
+from config import Config
 
 class Animation:
     double_flash = ((0, 0), (100, 100), (0, 250), (100, 350), (0, 500), (0, 900))
@@ -15,20 +16,45 @@ class Animation:
         off = 100
         seq = [(0,0)]
         for i in range(n):
-            seq.append((100, start + (on+off) * i))
+            seq.append((75, start + (on+off) * i))
             seq.append((0, start + (on+off) * i + on))
         seq.append((0,n * (on+off) + 100))
         print(seq)
         return seq
 
+    simple_flash = ((100, 0), (0, 50))
+    pulse = (
+            (0, 0), (20, 50), (40, 100), (60, 150), (40, 200), (20, 250), (0, 300),
+            (20, 350), (40, 400), (60, 450), (40, 500), (20, 550), (0, 600))
+
+    def fade(from_level, to_level, speed = None):
+        if speed is None:
+            speed = Config.config().fade_speed
+        step = (to_level - from_level) / 5
+        return list((int(from_level + step * x), x * speed) for x in range(5))
+
+    def join(*args):
+        t = 0
+        animation = []
+        for anim in args:
+            for (val, tt) in anim:
+                animation.append((val, tt + t))
+            t += anim[-1][1]
+
+        return animation
+
 
 class Light:
 
-    def __init__(self, pin, off = 0, on = 90, brake = None, flash = None):
+    def __init__(self, pin, off = 0, on = 90, brake = 0, flash = 0, no_pwm = False):
         self.pin = pin
-        self.pwm = PWM(Pin(pin, Pin.OUT))
-        self.pwm.freq(1000)
-        self.pwm.duty_u16(0)
+        if no_pwm:
+            self.output = Pin(pin, Pin.OUT)
+            self.pwm = None
+        else:
+            self.pwm = PWM(Pin(pin, Pin.OUT))
+            self.pwm.freq(1000)
+            self.pwm.duty_u16(0)
         self.level = 0
         self.off_level = off
         self.on_level = on
@@ -48,8 +74,11 @@ class Light:
 
     def show_level(self, level):
         if self.cur_level is None or level != self.cur_level:
-            print("Showing %d on %d" % (level, self.pin))
-            self.pwm.duty_u16(int(0xFFFF * level / 100))
+            #print("Showing %d on %d" % (level, self.pin))
+            if self.pwm:
+                self.pwm.duty_u16(int(0xFFFF * level / 100))
+            else:
+                self.output.value(1 if level > 50 else 0)
         self.cur_level = level
 
     def set_level(self, level):
@@ -61,9 +90,9 @@ class Light:
         if self.animation is not None:
             self.tick()
         else:
-            if self.brake_level is not None and brake:
+            if self.brake_level > 0 and brake:
                 new_level = self.brake_level
-            elif self.flash_level is not None and flash:
+            elif self.flash_level > 0 and flash:
                 new_level = self.flash_level
             elif light_state == vehicle.LightState.HIGH:
                 new_level = self.on_level
@@ -71,11 +100,14 @@ class Light:
                 new_level = self.off_level
             else:
                 new_level = 0
+            if new_level != self.level:
+                self.animate(Animation.fade(self.level, new_level))
             self.set_level(new_level)
 
-    def animate(self, animation):
+    def animate(self, animation, callback = None):
         self.animation_start = time.ticks_ms()
         self.animation = animation
+        self.animation_callback = callback
         self.show_level(animation[0][0])
 
     def tick(self):
@@ -87,6 +119,8 @@ class Light:
 
                     if i == len(self.animation) - 1:
                         self.animation = None
+                        if self.animation_callback is not None:
+                            self.animation_callback(self)
 
         else:
             self.show_level(self.level)

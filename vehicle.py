@@ -4,18 +4,15 @@ except ModuleNotFoundError:
     from machine_mock import Pin, PWM
 
 from button import ButtonEvent
-from menu import Menu
+import menu
 import time
 
 import config
-
-from light import Light
 
 class LightState:
     OFF = 0
     LOW = 1
     HIGH = 2
-
 
 class Vehicle:
 
@@ -27,7 +24,9 @@ class Vehicle:
         self.lights_flash = False
         self.lights = config.lights
         self.in_menu = False
-        self.menu = Menu(self)
+        self.menu = menu.Menu(self)
+        self.config = config
+        self.handbrake = False
 
 
     def primary_click(self, event):
@@ -56,6 +55,14 @@ class Vehicle:
             self.lights_flash = False
             self.update()
 
+    def handbrake_click(self, event):
+        if event == ButtonEvent.PRESS:
+            self.handbrake = True
+            self.update()
+        elif event == ButtonEvent.RELEASE:
+            self.handbrake = False
+            self.update()
+
     def level_setting(self, level):
         if self.in_menu:
             self.menu.level_setting(level)
@@ -66,11 +73,15 @@ class Vehicle:
         self.update()
 
     def update(self):
+        if self.moving and self.in_menu:
+            self.config.save()
+            self.in_menu = False
+
         for light in self.lights:
             if self.in_menu:
                 light.tick()
             else:
-                light.update(self.light_state, self.brakes_on, self.lights_flash)
+                light.update(self.light_state, self.brakes_on or self.handbrake, self.lights_flash)
 
         
 

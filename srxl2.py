@@ -49,6 +49,9 @@ class SRXL2Control(SRXL2Packet):
         self.channel_data = {}
         i = self._header_size_ + 1
 
+        if self.command != 0:
+            return 
+
         for n in range(32):
             if 1 << n & self.channel_mask:
                 if len(packet) < i + 2:
@@ -123,6 +126,7 @@ class SRXL2:
             return None
         (mfr_id, packet_type, length) = struct.unpack("BBB", packet[0:3])
         if mfr_id != 0xA6 or packet_type not in self.PACKET_TYPES:
+            print("Unkown packet: %d %d" %(mfr_id, packet_type))
             return None
 
         try:
