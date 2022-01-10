@@ -2,7 +2,7 @@ import config
 
 def test_config():
     
-    c = config.Config.load()
+    c = config.config
     assert len(c.lights) == 3
     assert c.lights[0].pin == 12
 

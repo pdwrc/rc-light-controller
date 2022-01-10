@@ -4,16 +4,17 @@ except ModuleNotFoundError:
     from machine_mock import Pin, PWM
 
 import time
-import vehicle
-from config import Config
+import config
+
+class LightState:
+    OFF = 0
+    LOW = 1
+    HIGH = 2
 
 class Animation:
     double_flash = ((0, 0), (100, 100), (0, 250), (100, 350), (0, 500), (0, 900))
 
-    def multi_flash(n):
-        start = 150
-        on = 150
-        off = 100
+    def multi_flash(n, start = 150, on = 150, off = 150):
         seq = [(0,0)]
         for i in range(n):
             seq.append((75, start + (on+off) * i))
@@ -29,7 +30,7 @@ class Animation:
 
     def fade(from_level, to_level, speed = None):
         if speed is None:
-            speed = Config.config().fade_speed
+            speed = config.config.fade_speed
         step = (to_level - from_level) / 5
         return list((int(from_level + step * x), x * speed) for x in range(5))
 
@@ -46,31 +47,20 @@ class Animation:
 
 class Light:
 
-    def __init__(self, pin, off = 0, on = 90, brake = 0, flash = 0, no_pwm = False):
-        self.pin = pin
+    def __init__(self, config, no_pwm = False):
+        self.pin = config.pin
+        self.config = config
         if no_pwm:
-            self.output = Pin(pin, Pin.OUT)
+            self.output = Pin(self.pin, Pin.OUT)
             self.pwm = None
         else:
-            self.pwm = PWM(Pin(pin, Pin.OUT))
+            self.pwm = PWM(Pin(self.pin, Pin.OUT))
             self.pwm.freq(1000)
             self.pwm.duty_u16(0)
         self.level = 0
-        self.off_level = off
-        self.on_level = on
-        self.brake_level = brake
-        self.flash_level = flash
         self.animation = None
         self.cur_level = None
 
-    def as_dict(self):
-        return {
-            "pin": self.pin,
-            "off": self.off_level,
-            "on": self.on_level,
-            "flash": self.flash_level,
-            "brake": self.brake_level
-        }
 
     def show_level(self, level):
         if self.cur_level is None or level != self.cur_level:
@@ -90,14 +80,14 @@ class Light:
         if self.animation is not None:
             self.tick()
         else:
-            if self.brake_level > 0 and brake:
-                new_level = self.brake_level
-            elif self.flash_level > 0 and flash:
-                new_level = self.flash_level
-            elif light_state == vehicle.LightState.HIGH:
-                new_level = self.on_level
-            elif light_state == vehicle.LightState.LOW:
-                new_level = self.off_level
+            if self.config.brake > 0 and brake:
+                new_level = self.config.brake
+            elif self.config.flash > 0 and flash:
+                new_level = self.config.flash
+            elif light_state == LightState.HIGH:
+                new_level = self.config.mode2
+            elif light_state == LightState.LOW:
+                new_level = self.config.mode1
             else:
                 new_level = 0
             if new_level != self.level:
