@@ -2,14 +2,15 @@ import time
 
 CLICK_LENGTH = 500
 MULTI_CLICK_GAP = 500
-EXTRA_LONG_CLICK_LENGTH = 3000
+EXTRA_LONG_CLICK_LENGTH = 1500
 
 class ButtonEvent:
     SHORT_CLICK = 1
     LONG_CLICK = 2
     EXTRA_LONG_CLICK = 3
-    PRESS = 4
-    RELEASE = 5
+    EXTRA_LONG_HOLD = 4
+    PRESS = 5
+    RELEASE = 6
 
 class ButtonState:
 
@@ -18,7 +19,7 @@ class ButtonState:
         self.callback = callback
         self.pressed = None
         self.released = None
-        self.extra_long_click_sent = False
+        self.extra_long_click_sent = 0
         self.reverse = reverse
         self.multi_click = 0
 
@@ -33,17 +34,21 @@ class ButtonState:
                 else:
                     self.multi_click = 0
                 self.callback(ButtonEvent.PRESS)
-        elif pressed and time.ticks_ms() - self.pressed > EXTRA_LONG_CLICK_LENGTH and not self.extra_long_click_sent:
-            self.extra_long_click_sent = True
-            self.callback(ButtonEvent.EXTRA_LONG_CLICK)
+        elif pressed and ((time.ticks_ms() - self.pressed) // EXTRA_LONG_CLICK_LENGTH) > self.extra_long_click_sent:
+            self.extra_long_click_sent += 1
+            self.callback(ButtonEvent.EXTRA_LONG_HOLD, count = self.extra_long_click_sent)
         elif not pressed and self.pressed:
             self.released = time.ticks_ms()
-            if self.pressed is not None and not self.extra_long_click_sent:
+            if self.pressed is not None:
                 self.callback(ButtonEvent.RELEASE)
-                long_click = self.released - self.pressed > CLICK_LENGTH
-                if long_click:
-                    self.callback(ButtonEvent.LONG_CLICK)
+                if self.extra_long_click_sent > 0:
+                    self.callback(ButtonEvent.EXTRA_LONG_CLICK, count = self.extra_long_click_sent)
+                    self.extra_long_click_sent = 0
                 else:
-                    self.callback(ButtonEvent.SHORT_CLICK)
+                    long_click = self.released - self.pressed > CLICK_LENGTH
+                    if long_click:
+                        self.callback(ButtonEvent.LONG_CLICK)
+                    else:
+                        self.callback(ButtonEvent.SHORT_CLICK)
             self.pressed = None
 

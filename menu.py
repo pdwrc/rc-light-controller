@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-import config
+from config import config
 
 class MenuItem:
 
@@ -45,7 +45,7 @@ class AdjustLevelMenuItem(MenuItem):
     def __init__(self, menu, light, state):
         super().__init__(menu, light)
         self.state = state
-        self.cur_value = getattr(light, state)
+        self.cur_value = getattr(light.config, state)
 
     def level_setting(self, level):
         self.light.set_level(level)
@@ -53,20 +53,20 @@ class AdjustLevelMenuItem(MenuItem):
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
-            setattr(self.light, self.state, self.cur_value)
+            setattr(self.light.config, self.state, self.cur_value)
             return False
         return True
 
     def select(self):
         self.menu.clear_all()
         if self.light:
-            self.light.set_level(getattr(self.light, self.state, 0))
+            self.light.set_level(getattr(self.light.config, self.state, 0))
 
 class AdjustFadeSpeedMenuItem(MenuItem):
 
     def __init__(self, menu):
         super().__init__(menu)
-        self.cur_value = config.Config.config().fade_speed
+        self.cur_value = config.fade_speed
 
     def level_setting(self, level):
         new_value = int(level / 3)
@@ -88,7 +88,31 @@ class AdjustFadeSpeedMenuItem(MenuItem):
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
-            config.Config.config().fade_speed = self.cur_value
+            config.fade_speed = self.cur_value
+            return False
+        return True
+
+class ToggleMenuItem(MenuItem):
+
+    def __init__(self, menu, obj, prop):
+        super().__init__(menu)
+        self.obj = obj
+        self.prop = prop
+        self.cur_value = getattr(obj, prop)
+
+    def update(self):
+        for l in self.menu.vehicle.lights:
+            l.set_level(50 if self.cur_value else 0)
+
+    def activate(self):
+        self.update()
+
+    def click(self, event):
+        if event == ButtonEvent.SHORT_CLICK:
+            self.cur_value = not self.cur_value
+            self.update()
+        if event == ButtonEvent.LONG_CLICK:
+            setattr(self.obj, self.prop, self.cur_value)
             return False
         return True
 
@@ -101,13 +125,14 @@ class Menu:
         for l in self.vehicle.lights:
             submenu = SubMenu(self, (
                 QuitMenu(self),
-                AdjustLevelMenuItem(self, l, "on_level"),
-                AdjustLevelMenuItem(self, l, "off_level"),
-                AdjustLevelMenuItem(self, l, "brake_level"),
-                AdjustLevelMenuItem(self, l, "flash_level"),
+                AdjustLevelMenuItem(self, l, "mode1"),
+                AdjustLevelMenuItem(self, l, "mode2"),
+                AdjustLevelMenuItem(self, l, "brake"),
+                AdjustLevelMenuItem(self, l, "flash"),
             ), light = l)
             self.menu.add(submenu)
         self.menu.add(AdjustFadeSpeedMenuItem(self))
+        self.menu.add(ToggleMenuItem(self, config, "use_handbrake"))
 
     def start(self):
         self.menu_pos = 0
@@ -131,7 +156,7 @@ class Menu:
     def go_up(self):
         (submenu, self.menu_pos) = self.menu_stack.pop()
         if len(self.menu_stack) == 0:
-            self.vehicle.config.save()
+            config.save()
             return False
         else:
             self.flash_all(self.menu_pos + 1)
@@ -154,18 +179,17 @@ class Menu:
                     self.menu_pos = 0
                     self.flash_all(self.menu_pos + 1)
                     item.items[0].select()
-                elif type(item) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem):
+                elif type(item) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem, ToggleMenuItem):
                     self.menu_stack.append((item, self.menu_pos))
                     item.activate()
                 if type(item) == QuitMenu:
                     if not self.go_up():
                         return False
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
-        elif (type(cur_menu) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem)):
+        elif (type(cur_menu) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem, ToggleMenuItem)):
             if not cur_menu.click(event):
                 self.go_up()
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
-
 
         return True
 

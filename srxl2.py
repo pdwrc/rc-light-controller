@@ -80,7 +80,7 @@ class SRXL2Telemetry(SRXL2Packet):
 
         DEVICE_ESC: ('>', (
             ('rpm', 'H', 10),
-            ('volts_input', 'H', 0.01),
+            ('volts_input', 'H', 1),
             ('temp_fet', 'H', 0.1),
             ('current_motor', 'H', 10),
             ('temp_bec', 'H', 0.1),
@@ -99,7 +99,7 @@ class SRXL2Telemetry(SRXL2Packet):
 
     def __repr__(self):
         s = "[ESC] "
-        s += "MOTOR: %5dRPM %3.2fA  IN: %2.1fV  FET: %2.1f°C " % (self.rpm, self.current_motor/1000, self.volts_input, self.temp_fet)
+        s += "MOTOR: %5dRPM %3.2fA  IN: %2.1fV  FET: %2.1f°C " % (self.rpm, self.current_motor/1000, self.volts_input/100, self.temp_fet)
         s += "BEC: %2.1f°C  " % (self.temp_bec)
         s += "%1.1fA  " % (self.current_bec/1000)
         s += "%1.1fV  " % (self.volts_bec)

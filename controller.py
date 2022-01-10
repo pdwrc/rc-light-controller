@@ -5,9 +5,7 @@ import struct
 import light
 from button import ButtonState
 import vehicle as veh
-from config import Config
-
-config = Config.config()
+from config import config, LightConfig
 
 vehicle = veh.Vehicle(config)
 
@@ -31,7 +29,7 @@ def handle_telemetry_packet(packet):
     #print(time.ticks_ms())
     #print(packet)
     braking = packet.throttle > 5 and packet.power_out == 0
-    vehicle.set_state(packet.rpm > 0, braking)
+    vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
 
 def handle_extra_button():
     pressed = extra_button_pin.value() > 0
@@ -71,7 +69,7 @@ def handle_control_packet(packet):
         status_led.animate(light.Animation.simple_flash)
         packet_count = 0
 
-status_led = light.Light(25, 0, 100, no_pwm = True)
+status_led = light.Light(LightConfig(25, 0, 100), no_pwm = True)
 
 u = UART(1, baudrate = 115200, tx=Pin(8), rx=Pin(9), bits=8, parity=None, invert = UART.INV_RX)
 led = Pin(25, Pin.OUT)
@@ -92,8 +90,8 @@ while True:
         lastt = time.ticks_us()
     time.sleep_us(10)
     if time.ticks_us() - lastt > 100:
-        if len(s) > 0:
-            print("Throwing away %d bytes" % len(s))
+#        if len(s) > 0:
+#            print("Throwing away %d bytes" % len(s))
         s = bytes()
 
     vehicle.update()

@@ -1,6 +1,8 @@
 class Pin:
-    def __init__(self, pin):
+    def __init__(self, pin, *args):
         pass
+
+    OUT = None 
 
 class PWM:
     def __init__(self, pin):
