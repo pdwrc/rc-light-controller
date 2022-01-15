@@ -46,15 +46,23 @@ class AdjustLevelMenuItem(MenuItem):
         super().__init__(menu, light)
         self.state = state
         self.cur_value = getattr(light.config, state)
+        self.level_set = None
 
     def level_setting(self, level):
-        self.light.set_level(level)
-        self.cur_value = level
+        # Only adjust the level if it's changed, so we don't override the
+        # brightness cycle
+        if self.level_set != level:
+            self.light.set_level(level)
+            self.cur_value = level
+            self.level_set = level
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
             setattr(self.light.config, self.state, self.cur_value)
             return False
+        elif event == ButtonEvent.SHORT_CLICK:
+            self.cur_value = (self.cur_value + 20) % 120
+            self.light.set_level(self.cur_value)
         return True
 
     def select(self):

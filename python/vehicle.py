@@ -8,6 +8,7 @@ import menu
 import telemetry
 import time
 from light import LightState, Light, Animation
+from config import LightConfig
 
 
 class Vehicle:
@@ -27,6 +28,7 @@ class Vehicle:
         self.handbrake = False
         self.voltage = None
         self.low_voltage = None
+        self.status_led = Light(LightConfig(25, 0, 100), no_pwm = True)
 
 
     def primary_click(self, event, count = None):
@@ -98,11 +100,15 @@ class Vehicle:
         if self.moving:
             self.in_telemetry = False
 
+        now = time.ticks_ms()
+
         for light in self.lights:
             if self.in_menu or self.in_telemetry:
-                light.tick()
+                light.tick(now)
             else:
-                light.update(self.light_state, self.brakes_on or (self.handbrake and self.config.use_handbrake), self.lights_flash)
+                light.update(now, self.light_state, self.brakes_on or (self.handbrake and self.config.use_handbrake), self.lights_flash)
+
+        self.status_led.tick(now)
 
         
 
