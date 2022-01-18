@@ -8,7 +8,7 @@ class Telemetry:
 
 
     def click(self, event, count = None):
-        if self.vehicle.voltage is None:
+        if self.vehicle.voltage is None or self.vehicle.cells is None:
             return False
         if event == ButtonEvent.SHORT_CLICK:
             for l in self.vehicle.lights:
@@ -17,7 +17,7 @@ class Telemetry:
             if self.position >= 1:
                 return False
             self.position += 1
-            self.do_voltage_animation(self.vehicle.low_voltage//6)
+            self.do_voltage_animation(self.vehicle.low_voltage//self.vehicle.cells)
         return True
 
     def voltage_animation(self, voltage):
@@ -37,5 +37,5 @@ class Telemetry:
     def start(self):
         self.position = 0
         if self.vehicle.voltage is not None:
-            self.do_voltage_animation(self.vehicle.voltage//6)
+            self.do_voltage_animation(self.vehicle.voltage//self.vehicle.cells)
 

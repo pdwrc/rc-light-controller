@@ -40,65 +40,72 @@ class SubMenu(MenuItem):
         return len(self.items)
 
 
-class AdjustLevelMenuItem(MenuItem):
+class LevelAdjusterMenuItem(MenuItem):
 
-    def __init__(self, menu, light, state):
-        super().__init__(menu, light)
-        self.state = state
-        self.cur_value = getattr(light.config, state)
-        self.level_set = None
+    def __init__(self, menu, light, initial_value):
+        super().__init__(menu)
+        self.level = initial_value
+        self.last_input_level = None
+        self.update(initial_value)
 
     def level_setting(self, level):
         # Only adjust the level if it's changed, so we don't override the
         # brightness cycle
-        if self.level_set != level:
-            self.light.set_level(level)
-            self.cur_value = level
-            self.level_set = level
+        if self.last_input_level is not None and level != self.last_input_level:
+            self.level = level
+            self.update(level)
+        self.last_input_level = level
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
-            setattr(self.light.config, self.state, self.cur_value)
+            self.save(self.level)
             return False
         elif event == ButtonEvent.SHORT_CLICK:
-            self.cur_value = (self.cur_value + 20) % 120
-            self.light.set_level(self.cur_value)
+            self.level = (self.level + 20) % 120
+            self.update(level)
         return True
+
+class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
+
+    def __init__(self, menu, light, state):
+        super().__init__(menu, light, getattr(light.config, state))
+        self.state = state
+
+    def update(self, level):
+        self.light.set_level(level)
+
+    def save(self, level):
+        setattr(self.light.config, self.state, level)
 
     def select(self):
         self.menu.clear_all()
         if self.light:
             self.light.set_level(getattr(self.light.config, self.state, 0))
 
-class AdjustFadeSpeedMenuItem(MenuItem):
+class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
-        super().__init__(menu)
-        self.cur_value = config.fade_speed
+        super().__init__(menu, config.fade_speed)
 
-    def level_setting(self, level):
-        new_value = int(level / 3)
-        self.cur_value = new_value
+    def update(self, level):
+        self.cur_fadespeed = level/3;
 
     def animate(self, l):
-        flash_length = 5*self.cur_value
+        flash_length = 5*self.cur_fadespeed
         animation = light.Animation.join(
-                light.Animation.fade(0,100,self.cur_value), 
+                light.Animation.fade(0,100,self.cur_fadespeed), 
                 ((100,0), (100, 250-flash_length)), 
-                light.Animation.fade(100,0,self.cur_value), 
+                light.Animation.fade(100,0,self.cur_fadespeed), 
                 ((0,0),(0, 1000-flash_length))
                 )
         l.animate(animation, callback = self.animate)
 
+    def save(self, level):
+        config.fade_speed = self.cur_value
+
     def activate(self):
         for l in self.menu.vehicle.lights:
             self.animate(l)
-
-    def click(self, event):
-        if event == ButtonEvent.LONG_CLICK:
-            config.fade_speed = self.cur_value
-            return False
-        return True
 
 class ToggleMenuItem(MenuItem):
 

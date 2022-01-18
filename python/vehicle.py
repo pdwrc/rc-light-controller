@@ -28,6 +28,7 @@ class Vehicle:
         self.handbrake = False
         self.voltage = None
         self.low_voltage = None
+        self.cells = None
         self.status_led = Light(LightConfig(25, 0, 100), no_pwm = True)
 
 
@@ -84,9 +85,17 @@ class Vehicle:
         if self.in_menu:
             self.menu.level_setting(level)
 
+    def calculate_cells(self, voltage):
+        for c in reversed([1,2,3,4,6,8]):
+            if voltage >= 316 * c:
+                return c
+        return None
+
     def set_state(self, moving, brakes, voltage):
         self.moving = moving
         self.brakes_on = brakes
+        if self.voltage is None and voltage is not None:
+            self.cells = self.calculate_cells(voltage)
         self.voltage = voltage
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage
