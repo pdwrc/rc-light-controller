@@ -1,0 +1,484 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "RC Light Controller"
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L power:+6V #PWR?
+U 1 1 61CD7926
+P 2050 1800
+F 0 "#PWR?" H 2050 1650 50  0001 C CNN
+F 1 "+6V" H 2065 1973 50  0000 C CNN
+F 2 "" H 2050 1800 50  0001 C CNN
+F 3 "" H 2050 1800 50  0001 C CNN
+	1    2050 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L light-controller:L4931CZ50-AP IC1
+U 1 1 61CDA871
+P 2750 2000
+F 0 "IC1" H 3478 1946 50  0000 L CNN
+F 1 "L4931CZ50-AP" H 3478 1855 50  0000 L CNN
+F 2 "TO-92" H 3500 2100 50  0001 L CNN
+F 3 "http://www.st.com/web/en/resource/technical/document/datasheet/CD00000971.pdf" H 3500 2000 50  0001 L CNN
+F 4 "L4931CZ50-AP, Low Dropout Voltage Regulator, 0.25A, 5 V +/-2%, 3-Pin TO-92" H 3500 1900 50  0001 L CNN "Description"
+F 5 "" H 3500 1800 50  0001 L CNN "Height"
+F 6 "STMicroelectronics" H 3500 1700 50  0001 L CNN "Manufacturer_Name"
+F 7 "L4931CZ50-AP" H 3500 1600 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "511-L4931CZ50-AP" H 3500 1500 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.co.uk/ProductDetail/STMicroelectronics/L4931CZ50-AP?qs=UNGD%252Bru69Do2UQWm%252BhYTFw%3D%3D" H 3500 1400 50  0001 L CNN "Mouser Price/Stock"
+F 10 "L4931CZ50-AP" H 3500 1300 50  0001 L CNN "Arrow Part Number"
+F 11 "https://www.arrow.com/en/products/l4931cz50-ap/stmicroelectronics" H 3500 1200 50  0001 L CNN "Arrow Price/Stock"
+	1    2750 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 61CDB6D8
+P 2050 2100
+F 0 "#PWR?" H 2050 1850 50  0001 C CNN
+F 1 "GND" H 2055 1927 50  0000 C CNN
+F 2 "" H 2050 2100 50  0001 C CNN
+F 3 "" H 2050 2100 50  0001 C CNN
+	1    2050 2100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2050 2100 2400 2100
+$Comp
+L Device:CP C1
+U 1 1 61CDC0F6
+P 2400 1950
+F 0 "C1" H 2518 1996 50  0000 L CNN
+F 1 "10uF" H 2518 1905 50  0000 L CNN
+F 2 "" H 2438 1800 50  0001 C CNN
+F 3 "~" H 2400 1950 50  0001 C CNN
+	1    2400 1950
+	1    0    0    -1  
+$EndComp
+Connection ~ 2400 2100
+Wire Wire Line
+	2400 2100 2750 2100
+Wire Wire Line
+	2050 1800 2400 1800
+$Comp
+L Device:CP C2
+U 1 1 61CE179E
+P 2750 2650
+F 0 "C2" H 2868 2696 50  0000 L CNN
+F 1 "10uF" H 2868 2605 50  0000 L CNN
+F 2 "" H 2788 2500 50  0001 C CNN
+F 3 "~" H 2750 2650 50  0001 C CNN
+	1    2750 2650
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2400 1800 2750 1800
+Wire Wire Line
+	2750 1800 2750 2000
+Connection ~ 2400 1800
+Wire Wire Line
+	2400 2100 2400 2850
+Wire Wire Line
+	4000 2100 4850 2100
+Wire Wire Line
+	5850 2100 5850 2750
+Wire Wire Line
+	5150 2100 5850 2100
+$Comp
+L Device:D_Schottky D1
+U 1 1 61CE6EDC
+P 5000 2100
+F 0 "D1" H 5000 2225 50  0000 C CNN
+F 1 "D_Schottky" H 5000 2316 50  0000 C CNN
+F 2 "" H 5000 2100 50  0001 C CNN
+F 3 "~" H 5000 2100 50  0001 C CNN
+	1    5000 2100
+	-1   0    0    1   
+$EndComp
+$Comp
+L Transistor_FET:BS170 Q2
+U 1 1 61CFEB50
+P 7450 4550
+F 0 "Q2" H 7654 4596 50  0000 L CNN
+F 1 "BS170" H 7654 4505 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 7650 4475 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 7450 4550 50  0001 L CNN
+	1    7450 4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED LED1
+U 1 1 61D0213D
+P 7550 2600
+F 0 "LED1" V 7589 2482 50  0000 R CNN
+F 1 "LED" V 7498 2482 50  0000 R CNN
+F 2 "" H 7550 2600 50  0001 C CNN
+F 3 "~" H 7550 2600 50  0001 C CNN
+	1    7550 2600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 61D030C4
+P 7550 2300
+F 0 "R2" H 7620 2346 50  0001 L CNN
+F 1 "R" H 7620 2300 50  0000 L CNN
+F 2 "" V 7480 2300 50  0001 C CNN
+F 3 "~" H 7550 2300 50  0001 C CNN
+	1    7550 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 61D082E5
+P 8100 2300
+F 0 "R3" H 8170 2346 50  0001 L CNN
+F 1 "R" H 8170 2300 50  0000 L CNN
+F 2 "" V 8030 2300 50  0001 C CNN
+F 3 "~" H 8100 2300 50  0001 C CNN
+	1    8100 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED LED2
+U 1 1 61D0B8BF
+P 8100 2600
+F 0 "LED2" V 8139 2482 50  0000 R CNN
+F 1 "LED" V 8048 2482 50  0000 R CNN
+F 2 "" H 8100 2600 50  0001 C CNN
+F 3 "~" H 8100 2600 50  0001 C CNN
+	1    8100 2600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R4
+U 1 1 61D0C670
+P 8650 2300
+F 0 "R4" H 8720 2346 50  0001 L CNN
+F 1 "R" H 8720 2300 50  0000 L CNN
+F 2 "" V 8580 2300 50  0001 C CNN
+F 3 "~" H 8650 2300 50  0001 C CNN
+	1    8650 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED LED3
+U 1 1 61D0CBCB
+P 8650 2600
+F 0 "LED3" V 8689 2482 50  0000 R CNN
+F 1 "LED" V 8598 2482 50  0000 R CNN
+F 2 "" H 8650 2600 50  0001 C CNN
+F 3 "~" H 8650 2600 50  0001 C CNN
+	1    8650 2600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Transistor_FET:BS170 Q3
+U 1 1 61D0DC20
+P 8000 4250
+F 0 "Q3" H 8204 4296 50  0000 L CNN
+F 1 "BS170" H 8204 4205 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 8200 4175 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 8000 4250 50  0001 L CNN
+	1    8000 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:BS170 Q4
+U 1 1 61D101C3
+P 8550 3950
+F 0 "Q4" H 8754 3996 50  0000 L CNN
+F 1 "BS170" H 8754 3905 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 8750 3875 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 8550 3950 50  0001 L CNN
+	1    8550 3950
+	1    0    0    -1  
+$EndComp
+Connection ~ 8100 1800
+Wire Wire Line
+	8100 1800 8650 1800
+$Comp
+L Device:R R1
+U 1 1 61D1809D
+P 6700 3250
+F 0 "R1" H 6770 3296 50  0000 L CNN
+F 1 "10K" H 6770 3205 50  0000 L CNN
+F 2 "" V 6630 3250 50  0001 C CNN
+F 3 "~" H 6700 3250 50  0001 C CNN
+	1    6700 3250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:BS170 Q1
+U 1 1 61D20D5A
+P 6600 3600
+F 0 "Q1" H 6804 3646 50  0000 L CNN
+F 1 "BS170" H 6804 3555 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 6800 3525 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 6600 3600 50  0001 L CNN
+	1    6600 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 61D2E5FD
+P 6700 3800
+F 0 "#PWR?" H 6700 3550 50  0001 C CNN
+F 1 "GND" H 6705 3627 50  0000 C CNN
+F 2 "" H 6700 3800 50  0001 C CNN
+F 3 "" H 6700 3800 50  0001 C CNN
+	1    6700 3800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 2850 2750 2850
+Wire Wire Line
+	2750 2800 2750 2850
+Text GLabel 6200 3600 0    50   Input ~ 0
+SIGNAL
+$Comp
+L power:GND #PWR?
+U 1 1 61D7048B
+P 8100 4900
+F 0 "#PWR?" H 8100 4650 50  0001 C CNN
+F 1 "GND" H 8105 4727 50  0000 C CNN
+F 2 "" H 8100 4900 50  0001 C CNN
+F 3 "" H 8100 4900 50  0001 C CNN
+	1    8100 4900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 2750 5650 2750
+Wire Wire Line
+	4250 4450 4100 4450
+Text Label 6250 3700 0    50   ~ 0
+INPUT1
+Connection ~ 7550 2150
+Wire Wire Line
+	7550 2150 7550 2450
+Connection ~ 7550 2450
+Wire Wire Line
+	7550 2450 7550 2750
+Connection ~ 8100 2150
+Wire Wire Line
+	8100 2150 8100 2450
+Connection ~ 8100 2450
+Wire Wire Line
+	8100 2450 8100 2750
+Connection ~ 8650 2450
+Wire Wire Line
+	7550 1800 7550 2150
+Wire Wire Line
+	8100 1800 8100 2150
+Wire Wire Line
+	8100 2750 8100 4050
+Connection ~ 8100 2750
+Wire Wire Line
+	7300 4450 7300 4250
+Wire Wire Line
+	7300 4250 7800 4250
+$Comp
+L Device:LED LED4
+U 1 1 61F9CB02
+P 9150 2600
+F 0 "LED4" V 9189 2482 50  0000 R CNN
+F 1 "LED" V 9098 2482 50  0000 R CNN
+F 2 "" H 9150 2600 50  0001 C CNN
+F 3 "~" H 9150 2600 50  0001 C CNN
+	1    9150 2600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 61F9F2A9
+P 9150 2300
+F 0 "R?" H 9220 2346 50  0001 L CNN
+F 1 "R" H 9220 2300 50  0000 L CNN
+F 2 "" V 9080 2300 50  0001 C CNN
+F 3 "~" H 9150 2300 50  0001 C CNN
+	1    9150 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8650 1800 8650 2150
+Wire Wire Line
+	8650 1800 9150 1800
+Wire Wire Line
+	9150 1800 9150 2150
+Wire Wire Line
+	8650 2450 8650 2750
+Connection ~ 8650 1800
+Wire Wire Line
+	8650 2750 8650 3750
+Connection ~ 8650 2750
+Wire Wire Line
+	8350 3950 7200 3950
+Wire Wire Line
+	7200 3950 7200 4250
+$Comp
+L Transistor_FET:BS170 Q5
+U 1 1 61FA6D95
+P 9050 3650
+F 0 "Q5" H 9254 3696 50  0000 L CNN
+F 1 "BS170" H 9254 3605 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 9250 3575 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 9050 3650 50  0001 L CNN
+	1    9050 3650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9150 2750 9150 3450
+Wire Wire Line
+	8850 3650 7100 3650
+Wire Wire Line
+	7100 3650 7100 4150
+$Comp
+L Device:LED LED5
+U 1 1 61FAA3BC
+P 3500 5000
+F 0 "LED5" V 3539 4882 50  0000 R CNN
+F 1 "LED" V 3448 4882 50  0000 R CNN
+F 2 "" H 3500 5000 50  0001 C CNN
+F 3 "~" H 3500 5000 50  0001 C CNN
+	1    3500 5000
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 61FAAFF5
+P 3500 4700
+F 0 "R?" H 3570 4746 50  0001 L CNN
+F 1 "R" H 3570 4700 50  0000 L CNN
+F 2 "" V 3430 4700 50  0001 C CNN
+F 3 "~" H 3500 4700 50  0001 C CNN
+	1    3500 4700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 4150 3500 4550
+$Comp
+L power:GND #PWR?
+U 1 1 61FAC849
+P 3500 5150
+F 0 "#PWR?" H 3500 4900 50  0001 C CNN
+F 1 "GND" H 3505 4977 50  0000 C CNN
+F 2 "" H 3500 5150 50  0001 C CNN
+F 3 "" H 3500 5150 50  0001 C CNN
+	1    3500 5150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7550 4750 8100 4750
+Wire Wire Line
+	8100 4750 8100 4900
+Wire Wire Line
+	8100 4450 8100 4750
+Connection ~ 8100 4750
+Wire Wire Line
+	8650 4150 8650 4750
+Wire Wire Line
+	8650 4750 8100 4750
+Wire Wire Line
+	9150 3850 9150 4750
+Wire Wire Line
+	9150 4750 8650 4750
+Connection ~ 8650 4750
+Text Label 3500 4150 0    50   ~ 0
+STATUS_LED
+Wire Wire Line
+	5850 3400 5850 3950
+Wire Wire Line
+	5850 3950 5650 3950
+Connection ~ 6700 3400
+Wire Wire Line
+	5850 3400 6700 3400
+Wire Wire Line
+	6400 3600 6200 3600
+Wire Wire Line
+	6700 3050 6700 3100
+Wire Wire Line
+	5650 3050 6700 3050
+Wire Wire Line
+	5650 4150 7100 4150
+Wire Wire Line
+	5650 4250 7200 4250
+Wire Wire Line
+	5650 4450 7300 4450
+Wire Wire Line
+	5650 4550 7250 4550
+Wire Wire Line
+	4250 4150 3500 4150
+$Comp
+L light-controller:PICO J?
+U 1 1 61CE95BA
+P 4250 2650
+F 0 "J?" H 4950 -39 50  0001 C CNN
+F 1 "PICO" H 4500 2950 50  0000 C CNN
+F 2 "PICO" H 5500 4850 50  0001 L CNN
+F 3 "https://datasheets.raspberrypi.org/pico/pico_datasheet.pdf" H 5500 4750 50  0001 L CNN
+F 4 "RP2040 microcontroller chip designed by Raspberry Pi in the United Kingdom 2  SPI, 2  I2C, 2  UART, 3  12-bit ADC, 16  controllable PWM channels" H 5500 4650 50  0001 L CNN "Description"
+F 5 "1" H 5500 4550 50  0001 L CNN "Height"
+F 6 "RASPBERRY-PI" H 5500 4450 50  0001 L CNN "Manufacturer_Name"
+F 7 "PICO" H 5500 4350 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "" H 5500 4250 50  0001 L CNN "Mouser Part Number"
+F 9 "" H 5500 4150 50  0001 L CNN "Mouser Price/Stock"
+F 10 "" H 5500 4050 50  0001 L CNN "Arrow Part Number"
+F 11 "" H 5500 3950 50  0001 L CNN "Arrow Price/Stock"
+	1    4250 2650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2750 2200 2750 2500
+Wire Wire Line
+	7550 1800 8100 1800
+Wire Wire Line
+	2750 1800 7550 1800
+Connection ~ 2750 1800
+Connection ~ 7550 1800
+Wire Wire Line
+	2750 2850 4000 2850
+Wire Wire Line
+	4000 2100 4000 2850
+Connection ~ 2750 2850
+Wire Wire Line
+	7550 2750 7550 4350
+Connection ~ 7550 2750
+$Comp
+L Switch:SW_Push SW1
+U 1 1 6204A66D
+P 3200 4050
+F 0 "SW1" H 3200 4335 50  0000 C CNN
+F 1 "SW_Push" H 3200 4244 50  0000 C CNN
+F 2 "" H 3200 4250 50  0001 C CNN
+F 3 "~" H 3200 4250 50  0001 C CNN
+	1    3200 4050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 4050 4250 4050
+$Comp
+L power:+3.3V #PWR?
+U 1 1 6204C9DA
+P 3000 3650
+F 0 "#PWR?" H 3000 3500 50  0001 C CNN
+F 1 "+3.3V" H 3015 3823 50  0000 C CNN
+F 2 "" H 3000 3650 50  0001 C CNN
+F 3 "" H 3000 3650 50  0001 C CNN
+	1    3000 3650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 3650 3000 4050
+$EndSCHEMATC

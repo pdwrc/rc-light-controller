@@ -1,0 +1,13 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP L4931CZ50-AP
+D L4931CZ50-AP, Low Dropout Voltage Regulator, 0.25A, 5 V +/-2%, 3-Pin TO-92
+F http://www.st.com/web/en/resource/technical/document/datasheet/CD00000971.pdf
+$ENDCMP
+#
+$CMP PICO
+D RP2040 microcontroller chip designed by Raspberry Pi in the United Kingdom 2  SPI, 2  I2C, 2  UART, 3  12-bit ADC, 16  controllable PWM channels
+F https://datasheets.raspberrypi.org/pico/pico_datasheet.pdf
+$ENDCMP
+#
+#End Doc Library
