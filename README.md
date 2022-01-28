@@ -66,8 +66,9 @@ inputs and supply voltage are within the Pico's limits, and to switch the LED
 load currents.
 
 Assembling the controller will require some sort of prototyping board.  It is
-possible to buy boards that are designed to sit under the Pico itself, and it
-is possible to build a 3 channel controller on one of these, as shown below:
+possible to buy [boards that are designed to sit under the
+Pico](https://thepihut.com/products/pico-proto) itself, and it is possible to
+build a 3 channel controller on one of these, as shown below:
 
 <img src="images/prototype-assembled.jpg">
 
@@ -81,6 +82,8 @@ The schematic is also available as a [PDF](kicad/light-controller.pdf)
 
 ## Power supply
 
+The "6V" in the schematic refers to whatever voltage your BEC is running at.
+
 The Pico requires an input voltage of no more than 5.5V, but will operate on
 anything above 1.8V.  RC BECs typically run at between 5V and 8V, so if you are
 running at more than 5.5V, you will need some way of dropping the supply voltage.
@@ -92,11 +95,11 @@ low drop-out, and you could use any old 5V regulator.
 
 If you only want to run off 6V, you could replace the regulator, capacitors and
 the Schottky diode (D1) with a simple signal diode that will knock 0.7V off the
-supply.
+supply voltage.
 
 A normal diode is fine in place of the Schottky diode, and it probably isn't
-needed anyway.  It's to prevent the RC power supply from being powered by the
-Pico's USB port, if connected.
+needed anyway.  It's to prevent the RC power supply from being back-powered by
+the Pico's USB port, if connected.
 
 ## Input
 
@@ -116,5 +119,14 @@ limit of 200mA.
 More output channels can be added easily, up to the Pico's limit of 16 PWM
 output pins.
 
+## Status LED and hardware button
 
+The status LED and hardware button are both optional.  The firmware will use
+the Pico's built in status LED, so this external LED simply allows you to use a
+brighter LED, or to put it elsewhere.
+
+The hardware button performs the same function as the button operated by the
+aux channel.  This allows the controller to be used and configured on a
+transmitter without an aux channel, although obviously this would lose the
+ability to remotely control the lights.
 
