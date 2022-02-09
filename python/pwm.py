@@ -58,6 +58,7 @@ def time_pulse():
 
 
 def detect_signal_type(vehicle, pin):
+    print("Detecting input signal")
 
     sm = rp2.StateMachine(0, time_gap, freq=1_000_000, jmp_pin=pin, in_base=pin)
     sm.active(1)
@@ -81,13 +82,16 @@ def detect_signal_type(vehicle, pin):
 
         time.sleep_us(10)
         vehicle.status_led.tick()
-    sm.active(1)
+
     vehicle.status_led.animate(None)
+
     if last_gap_pwm:
         vehicle.status_led.set_level(0)
+        print("Detected PWM signal")
         return RCMode.PWM
     else:
         vehicle.status_led.set_level(100)
+        print("Detected SRXL2 signal")
         return RCMode.SMART
 
 class PWMRCDriver:

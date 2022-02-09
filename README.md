@@ -34,6 +34,7 @@ Additional features include:
 * Improved automated brake light mode.
 * Read out of current and minimum battery voltage.
 * Fine adjustment of brightness levels using the AVC knob on the transmitter.
+* A "flash" mode, available when the vehicle is moving.
 
 A Spektrum Smart receiver and ESC communicate using the SRXL2 protocol rather
 than PWM.  This allows a single connection to get access to control data for

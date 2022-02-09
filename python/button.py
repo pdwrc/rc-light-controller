@@ -1,4 +1,5 @@
 import time
+from channel import ChannelState
 
 CLICK_LENGTH = 500
 MULTI_CLICK_GAP = 500
@@ -12,7 +13,9 @@ class ButtonEvent:
     PRESS = 5
     RELEASE = 6
 
-class ButtonState:
+
+class Button:
+    threshold = 65
 
     def __init__(self, channel, callback, reverse = False):
         self.channel = channel
@@ -23,7 +26,8 @@ class ButtonState:
         self.reverse = reverse
         self.multi_click = 0
 
-    def update(self, pressed):
+    def update(self, state):
+        pressed = (state == ChannelState.FORWARD and not self.reverse) or (state == ChannelState.REVERSE and self.reverse)
         if pressed and self.pressed is None:
             # debounce
             if self.released is None or time.ticks_ms() - self.released > 50:

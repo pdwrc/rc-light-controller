@@ -47,15 +47,20 @@ class Animation:
 class Light:
 
     def __init__(self, config, no_pwm = False):
-        self.pin = config.pin
+        if type(config.pin) == list:
+            self.pins = config.pin
+        else:
+            self.pins = [config.pin]
+
         self.config = config
         if no_pwm:
-            self.output = Pin(self.pin, Pin.OUT)
-            self.pwm = None
+            self.outputs = list(Pin(pin, Pin.OUT) for pin in self.pins)
+            self.pwms = None
         else:
-            self.pwm = PWM(Pin(self.pin, Pin.OUT))
-            self.pwm.freq(1000)
-            self.pwm.duty_u16(0)
+            self.pwms = list(PWM(Pin(pin, Pin.OUT)) for pin in self.pins)
+            for pwm in self.pwms:
+                pwm.freq(1000)
+                pwm.duty_u16(0)
         self.level = 0
         self.animation = None
         self.cur_level = None
@@ -63,11 +68,12 @@ class Light:
 
     def show_level(self, level):
         if self.cur_level is None or level != self.cur_level:
-            #print("Showing %d on %d" % (level, self.pin))
-            if self.pwm:
-                self.pwm.duty_u16(int(0xFFFF * level / 100))
+            if self.pwms:
+                for pwm in self.pwms:
+                    pwm.duty_u16(int(0xFFFF * level / 100))
             else:
-                self.output.value(1 if level > 50 else 0)
+                for output in self.outputs:
+                    output.value(1 if level > 50 else 0)
         self.cur_level = level
 
     def set_level(self, level):
@@ -119,7 +125,7 @@ class Light:
                         else:
                             self.animation = None
                             if self.animation_callback is not None:
-                                self.animation_callback(self)
+                                self.animation_callback(self, now)
 
         else:
             self.show_level(self.level)

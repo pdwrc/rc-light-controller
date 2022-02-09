@@ -29,10 +29,12 @@ class Config:
         if lights is not None:
             self.lights = [ LightConfig(x.get("pin"), x.get("mode1", 0), x.get("mode2", 100), x.get("brake", 0), x.get("flash", 0)) for x in lights ]
         else:
+            # Prototype = 14,16,18
             self.lights = [
-                LightConfig(14, 20, 60, flash = 100),
-                LightConfig(16, 30, 90),
-                LightConfig(18, 30, 70, brake = 90)
+                LightConfig(19, 20, 100, flash = 100),
+                LightConfig(18, 30, 100),
+                LightConfig(17, 30, 30, brake = 90),
+                LightConfig(16, 30, 30, brake = 90)
                 ]
 
         self.primary_button_channel = data.get("primary_button_channel", 8)
@@ -44,6 +46,10 @@ class Config:
         self.level_channel_max = data.get("level_channel_min", 43000)
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
+        self.throttle_channel = data.get("throttle_channel",1)
+        self.hardware_button_pin = data.get("hardware_button_pin", 11)
+        # Prototype = 9
+        self.input_pin_1 = data.get("input_pin_1", 21)
 
     def load():
         try:
@@ -56,7 +62,7 @@ class Config:
     def save(self):
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
-        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake"):
+        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake", "throttle_channel"):
             data[x] = getattr(self, x)
 
         with open("config.json", "w") as fout:

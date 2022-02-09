@@ -15,7 +15,6 @@ class Vehicle:
 
     def __init__(self, config):
         self.moving = False
-        self.throttle = 0
         self.light_state = LightState.OFF
         self.brakes_on = False
         self.lights_flash = False
@@ -29,8 +28,9 @@ class Vehicle:
         self.voltage = None
         self.low_voltage = None
         self.cells = None
-        self.status_led = Light(LightConfig(25, 0, 100), no_pwm = True)
-
+        self.throttle = None
+        self.reversing = False
+        self.quick_brake = None
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -92,10 +92,33 @@ class Vehicle:
         return None
 
     def set_state(self, moving, brakes, voltage):
+
+        if moving and not self.moving:
+            # Just started moving
+            self.reversing = self.throttle and self.throttle.reverse
+            if self.reversing:
+                print("Reversing")
+            else:
+                print("Forwards")
         self.moving = moving
-        self.brakes_on = brakes
+
+        # Quick brake shows the brake light as soon as the throttle is
+        # reversed for up to 0.25s if we're confident that we're moving
+        # forwards.  This avoids the short delay from waiting for telemetry to
+        # detect braking.
+        if self.throttle.reverse:
+            if self.quick_brake is None and not self.reversing and self.moving:
+                self.quick_brake = time.ticks_ms() 
+                print("Quick brake")
+        else:
+            # Reset quick brake if throttle neutral
+            self.quick_brake = None
+
+        self.brakes_on = brakes or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
+
         if self.voltage is None and voltage is not None:
             self.cells = self.calculate_cells(voltage)
+            print("%d cells" % self.cells)
         self.voltage = voltage
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage

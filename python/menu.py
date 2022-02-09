@@ -1,6 +1,7 @@
 from button import ButtonEvent
 import light
 from config import config
+import time
 
 class MenuItem:
 
@@ -43,7 +44,7 @@ class SubMenu(MenuItem):
 class LevelAdjusterMenuItem(MenuItem):
 
     def __init__(self, menu, light, initial_value):
-        super().__init__(menu)
+        super().__init__(menu, light)
         self.level = initial_value
         self.last_input_level = None
         self.update(initial_value)
@@ -62,7 +63,7 @@ class LevelAdjusterMenuItem(MenuItem):
             return False
         elif event == ButtonEvent.SHORT_CLICK:
             self.level = (self.level + 20) % 120
-            self.update(level)
+            self.update(self.level)
         return True
 
 class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
@@ -85,12 +86,12 @@ class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
 class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
-        super().__init__(menu, config.fade_speed)
+        super().__init__(menu, None, config.fade_speed)
 
     def update(self, level):
         self.cur_fadespeed = level/3;
 
-    def animate(self, l):
+    def animate(self, l, now = None):
         flash_length = 5*self.cur_fadespeed
         animation = light.Animation.join(
                 light.Animation.fade(0,100,self.cur_fadespeed), 
@@ -98,14 +99,15 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
                 light.Animation.fade(100,0,self.cur_fadespeed), 
                 ((0,0),(0, 1000-flash_length))
                 )
-        l.animate(animation, callback = self.animate)
+        l.animate(animation, callback = self.animate, now = now)
 
     def save(self, level):
-        config.fade_speed = self.cur_value
+        config.fade_speed = self.cur_fadespeed
 
     def activate(self):
+        now = time.ticks_ms()
         for l in self.menu.vehicle.lights:
-            self.animate(l)
+            self.animate(l, now)
 
 class ToggleMenuItem(MenuItem):
 
@@ -140,10 +142,10 @@ class Menu:
         for l in self.vehicle.lights:
             submenu = SubMenu(self, (
                 QuitMenu(self),
-                AdjustLevelMenuItem(self, l, "mode1"),
-                AdjustLevelMenuItem(self, l, "mode2"),
-                AdjustLevelMenuItem(self, l, "brake"),
-                AdjustLevelMenuItem(self, l, "flash"),
+                AdjustLightLevelMenuItem(self, l, "mode1"),
+                AdjustLightLevelMenuItem(self, l, "mode2"),
+                AdjustLightLevelMenuItem(self, l, "brake"),
+                AdjustLightLevelMenuItem(self, l, "flash"),
             ), light = l)
             self.menu.add(submenu)
         self.menu.add(AdjustFadeSpeedMenuItem(self))
@@ -194,14 +196,14 @@ class Menu:
                     self.menu_pos = 0
                     self.flash_all(self.menu_pos + 1)
                     item.items[0].select()
-                elif type(item) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem, ToggleMenuItem):
+                elif isinstance(item, (LevelAdjusterMenuItem, ToggleMenuItem)):
                     self.menu_stack.append((item, self.menu_pos))
                     item.activate()
                 if type(item) == QuitMenu:
                     if not self.go_up():
                         return False
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
-        elif (type(cur_menu) in (AdjustLevelMenuItem, AdjustFadeSpeedMenuItem, ToggleMenuItem)):
+        elif isinstance(cur_menu, (LevelAdjusterMenuItem, ToggleMenuItem)):
             if not cur_menu.click(event):
                 self.go_up()
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))

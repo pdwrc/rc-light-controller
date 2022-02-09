@@ -2,28 +2,30 @@ from machine import UART, Pin, time_pulse_us
 import time
 import struct
 import light
-from button import ButtonState
+from button import Button
+from channel import ChannelState, Channel
 import vehicle as veh
 from config import config, LightConfig
 from pwm import detect_signal_type, PWMRCDriver, RCMode
 from srxl2driver import SRXL2Driver
 
-vehicle = veh.Vehicle(config)
 
+status_led = light.Light(LightConfig([25, 12], 0, 100), no_pwm = True)
+
+vehicle = veh.Vehicle(config)
+vehicle.status_led = status_led
 smart_buttons = (
-        ButtonState(config.primary_button_channel, vehicle.primary_click, reverse=config.primary_button_reverse),
-        ButtonState(config.handbrake_button_channel, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
+        Button(config.primary_button_channel, vehicle.primary_click, reverse=config.primary_button_reverse),
+        Button(config.handbrake_button_channel, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
         )
 
 pwm_buttons = (
-        ButtonState(1, vehicle.primary_click, reverse=config.primary_button_reverse),
-        ButtonState(1, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
+        Button(1, vehicle.primary_click, reverse=config.primary_button_reverse),
+        Button(1, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
         )
 
-BUTTON_THRESHOLD = 10
-
-extra_button_pin = Pin(2, Pin.IN, Pin.PULL_DOWN)
-extra_button = ButtonState(None, vehicle.primary_click)
+hardware_button_pin = Pin(config.hardware_button_pin, Pin.IN, Pin.PULL_DOWN)
+hardware_button = Button(None, vehicle.primary_click)
 
 init = False
 good_packets = 0
@@ -33,17 +35,15 @@ channel_zeros = {}
 
 packet_count = 0
 
-input_pin = Pin(9, Pin.IN)
+input_pin = Pin(config.input_pin_1, Pin.IN)
 
 def handle_telemetry_packet(packet):
-    #print(time.ticks_ms())
-    #print(packet)
     braking = packet.throttle > 5 and packet.power_out == 0
     vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
 
-def handle_extra_button():
-    pressed = extra_button_pin.value() > 0
-    extra_button.update(pressed)
+def handle_hardware_button():
+    pressed = hardware_button_pin.value() > 0
+    hardware_button.update(pressed)
 
 def handle_control_packet(channel_data):
     global init
@@ -51,7 +51,7 @@ def handle_control_packet(channel_data):
     if not init:
         print(channel_data)
         ok = True
-        for b in buttons:
+        for b in channels:
             v = channel_data.get(b.channel)
             if v is None:
                 ok = False
@@ -65,12 +65,17 @@ def handle_control_packet(channel_data):
                 for l in vehicle.lights:
                     l.animate(light.Animation.multi_flash(3))
     else:
-        for b in buttons:
+        for b in channels:
             v = channel_data.get(b.channel)
             if v is not None:
                 zero = channel_zeros.get(b.channel, 0x8000)
-                pressed = (not b.reverse and v > zero + BUTTON_THRESHOLD) or (b.reverse and v < zero - BUTTON_THRESHOLD)
-                b.update(pressed)
+                if v > zero + b.threshold:
+                    state = ChannelState.FORWARD
+                elif v < zero - b.threshold:
+                    state = ChannelState.REVERSE
+                else:
+                    state = ChannelState.NEUTRAL
+                b.update(state)
         v = channel_data.get(config.level_channel)
         if v is not None:
             level = int(100 * (v - config.level_channel_min) / (config.level_channel_max - config.level_channel_min))
@@ -80,24 +85,28 @@ def handle_control_packet(channel_data):
     global packet_count
     packet_count += 1
     if packet_count >= 100:
-        vehicle.status_led.animate(light.Animation.multi_flash(1 if init else 2, 75, 75, 50))
+        status_led.animate(light.Animation.multi_flash(1 if init else 2, 75, 75, 50))
         packet_count = 0
 
-#detect()
+
+
+print("Controller starting");
 
 mode = detect_signal_type(vehicle, input_pin)
 if mode == RCMode.SMART:
     driver = SRXL2Driver(input_pin, handle_control_packet, handle_telemetry_packet)
-    buttons = smart_buttons
+    vehicle.throttle = Channel(config.throttle_channel)
+    channels = smart_buttons + (vehicle.throttle,)
 else:
     driver = PWMRCDriver([input_pin], handle_control_packet)
     buttons = pwm_buttons
+
 
 last_brake = False
 driver.start()
 while True:
     driver.process()
     vehicle.update()
-    vehicle.status_led.tick()
-    handle_extra_button()
+    status_led.tick()
+    handle_hardware_button()
     time.sleep_us(10)
