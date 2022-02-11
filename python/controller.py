@@ -85,12 +85,13 @@ def handle_control_packet(channel_data):
     global packet_count
     packet_count += 1
     if packet_count >= 100:
-        status_led.animate(light.Animation.multi_flash(1 if init else 2, 75, 75, 50))
+        if not hardware_button.pressed:
+            vehicle.status_led_signal_flash(1 if init else 2)
         packet_count = 0
 
 
 
-time.sleep(0.3)
+time.sleep(0.5)
 print("Controller starting");
 
 mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
@@ -102,12 +103,10 @@ else:
     driver = PWMRCDriver([input_pin], handle_control_packet)
     channels = pwm_buttons
 
-
 last_brake = False
 driver.start()
 while True:
     driver.process()
     vehicle.update()
-    status_led.tick()
     handle_hardware_button()
     time.sleep_us(10)

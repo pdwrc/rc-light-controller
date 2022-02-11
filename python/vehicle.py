@@ -9,13 +9,14 @@ import telemetry
 import time
 from light import LightState, Light, Animation
 from config import LightConfig
+from laststate import LastState
 
 
 class Vehicle:
 
     def __init__(self, config):
         self.moving = False
-        self.light_state = LightState.OFF
+        self.light_state = LastState.load()
         self.brakes_on = False
         self.lights_flash = False
         self.lights = [Light(c) for c in config.lights]
@@ -46,14 +47,16 @@ class Vehicle:
                 else:
                     self.light_state = LightState.LOW
                 self.update()
+                LastState.save(self.light_state)
             elif event == ButtonEvent.LONG_CLICK:
                 self.light_state = LightState.OFF
+                LastState.save(self.light_state)
             elif event == ButtonEvent.EXTRA_LONG_HOLD and count <= 2:
                 # Button has been held down for a long time, but has not been released yet
                 # Flash up to two times (telemetry then menu)
                 # Turn off the lights so they don't come back on between
                 # animations.
-                for l in self.lights:
+                for l in self.all_lights:
                     l.set_level(0)
                     l.animate(Animation.multi_flash(1))
             elif event == ButtonEvent.EXTRA_LONG_CLICK:
@@ -146,6 +149,10 @@ class Vehicle:
     @property
     def all_lights(self):
         return self.lights + [self.status_led]
+
+    def status_led_signal_flash(self, count):
+        if not self.in_menu and not self.in_telemetry:
+            self.status_led.animate(light.Animation.multi_flash(count, 75, 75, 50))
         
 
 

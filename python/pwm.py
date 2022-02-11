@@ -89,6 +89,11 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
 
     vehicle.status_led.animate(None)
 
+    # Wait for button to be releeased, if pressed.
+    if hardware_button_clicked:
+        while hardware_button_pin.value() == 1:
+            time.sleep_us(10)
+
     if last_gap_pwm or hardware_button_clicked:
         vehicle.status_led.set_level(0)
         print("Detected PWM signal")
