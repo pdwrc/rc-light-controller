@@ -14,12 +14,14 @@ class LightState:
 class Animation:
     double_flash = ((0, 0), (100, 100), (0, 250), (100, 350), (0, 500), (0, 900))
 
-    def multi_flash(n, start = 150, on = 150, off = 150):
+    def multi_flash(n, start = 150, on = 150, off = 150, invert = False):
         seq = [(0,0)]
+        a = 75 if not invert else 0
+        b = 0 if not invert else 75
         for i in range(n):
-            seq.append((75, start + (on+off) * i))
-            seq.append((0, start + (on+off) * i + on))
-        seq.append((0,n * (on+off) + off))
+            seq.append((a, start + (on+off) * i))
+            seq.append((b, start + (on+off) * i + on))
+        seq.append((b,n * (on+off) + off))
         return seq
 
     simple_flash = ((100, 0), (0, 50), (0, 100))
@@ -66,6 +68,11 @@ class Light:
         self.cur_level = None
 
 
+    def menu_scale(self, level, menu):
+        if menu:
+            return int(level * self.config.menu/100)
+        return level
+
     def show_level(self, level):
         if self.cur_level is None or level != self.cur_level:
             if self.pwms:
@@ -76,7 +83,10 @@ class Light:
                     output.value(1 if level > 50 else 0)
         self.cur_level = level
 
-    def set_level(self, level):
+    def set_level(self, level, menu = False):
+        print("Request level to %d" % level)
+        level = self.menu_scale(level, menu)
+        print("Setting level to %d" % level)
         if self.animation is None:
             self.show_level(level)
         self.level = level
@@ -99,13 +109,14 @@ class Light:
                 self.animate(Animation.fade(self.level, new_level))
             self.set_level(new_level)
 
-    def animate(self, animation, callback = None, loop = False, now = None):
+    def animate(self, animation, callback = None, loop = False, now = None, menu = False):
         if animation is not None:
+            self.menu_animation = menu
             self.animation_start = now if now is not None else time.ticks_ms()
             self.animation = animation
             self.animation_loop = loop
             self.animation_callback = callback
-            self.show_level(animation[0][0])
+            self.show_level(self.menu_scale(animation[0][0], menu))
         else:
             self.animation = None
             self.show_level(self.level)
@@ -117,7 +128,7 @@ class Light:
             t = now - self.animation_start
             for i, (value, ta) in enumerate(self.animation):
                 if t > ta and (i == len(self.animation) - 1 or t < self.animation[i+1][1]):
-                    self.show_level(value)
+                    self.show_level(self.menu_scale(value, self.menu_animation))
 
                     if i == len(self.animation) - 1:
                         if self.animation_loop:

@@ -95,11 +95,9 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
             time.sleep_us(10)
 
     if last_gap_pwm or hardware_button_clicked:
-        vehicle.status_led.set_level(0)
         print("Detected PWM signal")
         return RCMode.PWM
     else:
-        vehicle.status_led.set_level(100)
         print("Detected SRXL2 signal")
         return RCMode.SMART
 

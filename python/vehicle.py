@@ -32,7 +32,7 @@ class Vehicle:
         self.throttle = None
         self.reversing = False
         self.quick_brake = None
-        self.status_led = Light(LightConfig(config.status_led_pins, 0, 100), no_pwm = True)
+        self.status_led = Light(LightConfig(config.status_led_pins, 0, 100, menu = 100), no_pwm = True)
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -149,10 +149,4 @@ class Vehicle:
     @property
     def all_lights(self):
         return self.lights + [self.status_led]
-
-    def status_led_signal_flash(self, count):
-        if not self.in_menu and not self.in_telemetry:
-            self.status_led.animate(light.Animation.multi_flash(count, 75, 75, 50))
-        
-
 

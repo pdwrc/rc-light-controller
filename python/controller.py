@@ -85,8 +85,9 @@ def handle_control_packet(channel_data):
     global packet_count
     packet_count += 1
     if packet_count >= 100:
-        if not hardware_button.pressed:
-            vehicle.status_led_signal_flash(1 if init else 2)
+        if not hardware_button.pressed and not vehicle.in_menu and not vehicle.in_telemetry:
+            vehicle.status_led.set_level(100 if mode == RCMode.SMART else 0)
+            vehicle.status_led.animate(light.Animation.multi_flash(1 if init else 2, 75, 75, 50, invert = mode == RCMode.SMART))
         packet_count = 0
 
 

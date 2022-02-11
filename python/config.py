@@ -5,12 +5,13 @@ from pins import Pins
 
 class LightConfig:
 
-    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0):
+    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, menu = 50):
         self.pin = pin
         self.mode1 = mode1
         self.mode2 = mode2
         self.brake = brake
         self.flash = flash
+        self.menu = menu
 
     def as_dict(self):
         return {
