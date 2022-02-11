@@ -10,10 +10,10 @@ from pwm import detect_signal_type, PWMRCDriver, RCMode
 from srxl2driver import SRXL2Driver
 
 
-status_led = light.Light(LightConfig([25, 12], 0, 100), no_pwm = True)
 
 vehicle = veh.Vehicle(config)
-vehicle.status_led = status_led
+status_led = vehicle.status_led
+
 smart_buttons = (
         Button(config.primary_button_channel, vehicle.primary_click, reverse=config.primary_button_reverse),
         Button(config.handbrake_button_channel, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
@@ -35,7 +35,7 @@ channel_zeros = {}
 
 packet_count = 0
 
-input_pin = Pin(config.input_pin_1, Pin.IN)
+input_pin = Pin(config.input_pins[0], Pin.IN)
 
 def handle_telemetry_packet(packet):
     braking = packet.throttle > 5 and packet.power_out == 0
@@ -90,16 +90,17 @@ def handle_control_packet(channel_data):
 
 
 
+time.sleep(0.3)
 print("Controller starting");
 
-mode = detect_signal_type(vehicle, input_pin)
+mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
 if mode == RCMode.SMART:
     driver = SRXL2Driver(input_pin, handle_control_packet, handle_telemetry_packet)
     vehicle.throttle = Channel(config.throttle_channel)
     channels = smart_buttons + (vehicle.throttle,)
 else:
     driver = PWMRCDriver([input_pin], handle_control_packet)
-    buttons = pwm_buttons
+    channels = pwm_buttons
 
 
 last_brake = False

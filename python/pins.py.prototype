@@ -1,0 +1,8 @@
+# Pin configuration for original Pico prototype
+
+class Pins:
+
+    INPUTS = (9,)
+    OUTPUTS = (14,16,18)
+    STATUS_LEDS = (25,)
+    BUTTON = None

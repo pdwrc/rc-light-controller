@@ -1,0 +1,9 @@
+# Pin configuration to match schematic on
+# https://github.com/pdwrc/rc-light-controller
+
+class Pins:
+
+    INPUTS = (21,)
+    OUTPUTS = (16, 17, 18, 19)
+    STATUS_LEDS = (25, 12) 
+    BUTTON = 11

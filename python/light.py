@@ -47,7 +47,7 @@ class Animation:
 class Light:
 
     def __init__(self, config, no_pwm = False):
-        if type(config.pin) == list:
+        if type(config.pin) in (list, tuple):
             self.pins = config.pin
         else:
             self.pins = [config.pin]

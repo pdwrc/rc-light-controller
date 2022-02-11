@@ -106,7 +106,7 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
     def activate(self):
         now = time.ticks_ms()
-        for l in self.menu.vehicle.lights:
+        for l in self.menu.vehicle.all_lights:
             self.animate(l, now)
 
 class ToggleMenuItem(MenuItem):
@@ -118,7 +118,7 @@ class ToggleMenuItem(MenuItem):
         self.cur_value = getattr(obj, prop)
 
     def update(self):
-        for l in self.menu.vehicle.lights:
+        for l in self.menu.vehicle.all_lights:
             l.set_level(50 if self.cur_value else 0)
 
     def activate(self):
@@ -154,7 +154,7 @@ class Menu:
     def start(self):
         self.menu_pos = 0
         self.menu_depth = 0 
-        for l in self.vehicle.lights:
+        for l in self.vehicle.all_lights:
             l.animate(light.Animation.multi_flash(1))
         self.menu_stack = [(self.menu, 0)]
         self.clear_all()
@@ -163,11 +163,11 @@ class Menu:
         pass
 
     def flash_all(self, n):
-        for l in self.vehicle.lights:
+        for l in self.vehicle.all_lights:
             l.animate(light.Animation.multi_flash(n))
 
     def clear_all(self):
-        for l in self.vehicle.lights:
+        for l in self.vehicle.all_lights:
             l.set_level(0)
 
     def go_up(self):

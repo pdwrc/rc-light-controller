@@ -1,6 +1,8 @@
 import json
 import os
 
+from pins import Pins
+
 class LightConfig:
 
     def __init__(self, pin, mode1, mode2, brake = 0, flash = 0):
@@ -29,13 +31,12 @@ class Config:
         if lights is not None:
             self.lights = [ LightConfig(x.get("pin"), x.get("mode1", 0), x.get("mode2", 100), x.get("brake", 0), x.get("flash", 0)) for x in lights ]
         else:
-            # Prototype = 14,16,18
-            self.lights = [
-                LightConfig(19, 20, 100, flash = 100),
-                LightConfig(18, 30, 100),
-                LightConfig(17, 30, 30, brake = 90),
-                LightConfig(16, 30, 30, brake = 90)
-                ]
+            for pin in Pins.OUTPUTS:
+                self.lights.append(LightConfig(pin, 20, 100))
+
+            # Make the last light a brake light
+            self.lights[-1].brake = 100
+            self.lights[-1].mode2 = 00
 
         self.primary_button_channel = data.get("primary_button_channel", 8)
         self.primary_button_reverse = data.get("primary_button_reverse", False)
@@ -47,9 +48,9 @@ class Config:
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
         self.throttle_channel = data.get("throttle_channel",1)
-        self.hardware_button_pin = data.get("hardware_button_pin", 11)
-        # Prototype = 9
-        self.input_pin_1 = data.get("input_pin_1", 21)
+        self.hardware_button_pin = Pins.BUTTON
+        self.input_pins = Pins.INPUTS
+        self.status_led_pins = Pins.STATUS_LEDS
 
     def load():
         try:

@@ -24,5 +24,6 @@ class SRXL2Driver:
                     self.telemetry_callback(packet)
                 self.rx = self.rx[self.rx[2]:]
             self.lastt = time.ticks_us()
+        # Throw away any remaining bytes after 100us of inactivity
         if time.ticks_us() - self.lastt > 100:
             self.rx = bytes()

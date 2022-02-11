@@ -57,7 +57,7 @@ def time_pulse():
     wrap()
 
 
-def detect_signal_type(vehicle, pin):
+def detect_signal_type(vehicle, pin, hardware_button_pin):
     print("Detecting input signal")
 
     sm = rp2.StateMachine(0, time_gap, freq=1_000_000, jmp_pin=pin, in_base=pin)
@@ -67,6 +67,7 @@ def detect_signal_type(vehicle, pin):
     last_gap_pwm = None
 
     vehicle.status_led.animate(Animation.simple_flash, loop = True)
+    hardware_button_clicked = False
             
     while len(gaps) < 50:
         while sm.rx_fifo() > 0:
@@ -82,10 +83,13 @@ def detect_signal_type(vehicle, pin):
 
         time.sleep_us(10)
         vehicle.status_led.tick()
+        if hardware_button_pin is not None and hardware_button_pin.value() == 1:
+            hardware_button_clicked = True
+            break
 
     vehicle.status_led.animate(None)
 
-    if last_gap_pwm:
+    if last_gap_pwm or hardware_button_clicked:
         vehicle.status_led.set_level(0)
         print("Detected PWM signal")
         return RCMode.PWM
