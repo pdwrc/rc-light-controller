@@ -22,6 +22,9 @@ class LightConfig:
             "brake": self.brake
         }
 
+class PWMMode:
+    SW_TH = 0
+    TH_ST = 1
 
 class Config:
 
@@ -39,6 +42,7 @@ class Config:
             self.lights[-1].brake = 100
             self.lights[-1].mode2 = 00
 
+        self.pwm_mode = data.get("pwm_mode", PWMMode.SW_TH)
         self.primary_button_channel = data.get("primary_button_channel", 8)
         self.primary_button_reverse = data.get("primary_button_reverse", False)
         self.handbrake_button_channel = data.get("handbrake_button_channel", 8)
@@ -64,7 +68,7 @@ class Config:
     def save(self):
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
-        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake", "throttle_channel"):
+        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake", "throttle_channel", "pwm_mode"):
             data[x] = getattr(self, x)
 
         with open("config.json", "w") as fout:

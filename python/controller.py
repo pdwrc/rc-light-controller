@@ -97,11 +97,11 @@ print("Controller starting");
 
 mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
 if mode == RCMode.SMART:
-    driver = SRXL2Driver(input_pin, handle_control_packet, handle_telemetry_packet)
+    driver = SRXL2Driver(config.input_pins[0], handle_control_packet, handle_telemetry_packet)
     vehicle.throttle = Channel(config.throttle_channel)
     channels = smart_buttons + (vehicle.throttle,)
 else:
-    driver = PWMRCDriver([input_pin], handle_control_packet)
+    driver = PWMRCDriver(config.input_pins, handle_control_packet)
     channels = pwm_buttons
 
 last_brake = False

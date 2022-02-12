@@ -89,7 +89,7 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
 
     vehicle.status_led.animate(None)
 
-    # Wait for button to be releeased, if pressed.
+    # Wait for button to be released, if pressed.
     if hardware_button_clicked:
         while hardware_button_pin.value() == 1:
             time.sleep_us(10)
