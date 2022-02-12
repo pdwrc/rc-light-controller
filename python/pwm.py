@@ -109,7 +109,8 @@ class PWMRCDriver:
     def start(self):
         self.sms = []
         for i, pin in enumerate(self.pins):
-            sm = rp2.StateMachine(i, time_pulse, freq=1_000_000, jmp_pin=pin, in_base=pin)
+            p = Pin(pin, Pin.IN)
+            sm = rp2.StateMachine(i, time_pulse, freq=1_000_000, jmp_pin=p, in_base=p)
             sm.active(1)
             self.sms.append(sm)
 

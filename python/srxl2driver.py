@@ -4,7 +4,7 @@ import time
 
 class SRXL2Driver:
     def __init__(self, pin, control_callback, telemetry_callback):
-        self.pin = pin
+        self.pin = Pin(pin, Pin.IN)
         self.control_callback = control_callback
         self.telemetry_callback = telemetry_callback
 

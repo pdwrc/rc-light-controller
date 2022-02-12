@@ -24,7 +24,10 @@ pwm_buttons = (
         Button(1, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
         )
 
-hardware_button_pin = Pin(config.hardware_button_pin, Pin.IN, Pin.PULL_DOWN)
+if config.hardware_button_pin is not None:
+    hardware_button_pin = Pin(config.hardware_button_pin, Pin.IN, Pin.PULL_DOWN)
+else:
+    hardware_button_pin = None
 hardware_button = Button(None, vehicle.primary_click)
 
 init = False
@@ -42,8 +45,9 @@ def handle_telemetry_packet(packet):
     vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
 
 def handle_hardware_button():
-    pressed = hardware_button_pin.value() > 0
-    hardware_button.update(pressed)
+    if hardware_button_pin is not None:
+        pressed = hardware_button_pin.value() > 0
+        hardware_button.update(pressed)
 
 def handle_control_packet(channel_data):
     global init

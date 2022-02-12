@@ -84,9 +84,7 @@ class Light:
         self.cur_level = level
 
     def set_level(self, level, menu = False):
-        print("Request level to %d" % level)
         level = self.menu_scale(level, menu)
-        print("Setting level to %d" % level)
         if self.animation is None:
             self.show_level(level)
         self.level = level
