@@ -21,13 +21,17 @@ using a spare channel on the transmitter, with different brightnesses for
 individual channels in the different modes.  
 
 It can configured to activate brake lights automatically, or using a button on
-the transmitter.
+the transmitter.  There are three different brake modes available:
+
+* Simple — brakes come on whenever the throttle is reversed
+* Smart — brakes come on on the first reverse action.  Subsequent actions are assumed to be reverse.
+* "Lift off" braking — brakes on for a fixed time after releasing the throttle
 
 The controller has a configurable "soft on"/"soft off" setting, which makes
 LEDs look more like traditional incandescent bulbs.
 
 The controller can be configured and controlled using a single channel in a
-single direction, which means it can shared a channel with another function
+single direction, which means it can share a channel with another function
 (e.g. handbrake).
 
 ## Spektrum Smart support
