@@ -200,35 +200,35 @@ the transmitter.
 
 The overall menu structure is shown below:
 
-* 1. Quit 
-* 2. Settings menu
-    * 1. (Go up)
-    * 2. Channel mode (PWM) [ Switch+Throttle / Throttle+Steering ]
-    * 3. Brake mode (PWM) [ Simple / Smart / Drag ]
-    * 4. Soft on/off speed
-    * 5. Handbrake mode (brake on secondary button) [ On / Off ]
-    * 6. Turn signal steering threshold
-    * 7. Sleep animation menu
-        * 1. (Go up)
-        * 2. Start delay
-        * 3. Sleep when lights on [ On / Off ]
-        * 4. Pulse duration
-        * 5. Off duration
-        * 6. Off brightness
-* 3. Channel 1 configuration
-    * 1. Go up
-    * 2. Mode 1
-    * 3. Mode 2
-    * 4. Brake
-    * 5. Flash
-    * 6. Left turn brightness
-    * 7. Right turn brightness
-    * 8. Sleep brightness
-* 4. Channel 2 configuration 
+* 1\. Quit 
+* 2\. Settings menu
+    * 1\. (Go up)
+    * 2\. Channel mode (PWM) [ Switch+Throttle / Throttle+Steering ]
+    * 3\. Brake mode (PWM) [ Simple / Smart / Drag ]
+    * 4\. Soft on/off speed
+    * 5\. Handbrake mode (brake on secondary button) [ On / Off ]
+    * 6\. Turn signal steering threshold
+    * 7\. Sleep animation menu
+        * 1\. (Go up)
+        * 2\. Start delay
+        * 3\. Sleep when lights on [ On / Off ]
+        * 4\. Pulse duration
+        * 5\. Off duration
+        * 6\. Off brightness
+* 3\. Channel 1 configuration
+    * 1\. Go up
+    * 2\. Mode 1
+    * 3\. Mode 2
+    * 4\. Brake
+    * 5\. Flash
+    * 6\. Left turn brightness
+    * 7\. Right turn brightness
+    * 8\. Sleep brightness
+* 4\. Channel 2 configuration 
     * _As for channel 1_
-* 5. Channel 3 configuration
+* 5\. Channel 3 configuration
     * _As for channel 1_
-* 6. Channel 4 configuration
+* 6\. Channel 4 configuration
     * _As for channel 1_
 
 ### Settings
