@@ -61,29 +61,6 @@ If you're not using Spektrum Smart equipment, the controller will operate in
 want an aux switch and throttle, three if you want to add steering for turn
 signals.
 
-# Software
-
-To install the software, first flash your Pico with [MicroPython firmware](https://micropython.org/download/rp2-pico/).
-
-Once done, use [mpremote](https://docs.micropython.org/en/latest/reference/mpremote.html), [rshell](https://github.com/dhylands/rshell) or [pyboard.py](https://github.com/micropython/micropython/blob/master/tools/pyboard.py) to copy the contents of the `python` directory onto the Pico.  With `mpremote`, this is done as follows:
-
-```
-mpremote fs cp python/*.py :
-```
-
-You can now start the controller using the following command:
-
-```
-mpremote run python/controller.py
-```
-
-This should show some debug output from the firmware.  To make the controller
-run automatically on boot, install `controller.py` as `main.py`:
-
-```
-mpremote fs cp python/controller.py :main.py
-```
-
 # Hardware
 
 The light controller can be built as a DIY project using a Pi Pico
@@ -191,3 +168,25 @@ aux channel.  This allows the controller to be used and configured on a
 transmitter without an aux channel, although obviously this would lose the
 ability to remotely control the lights.
 
+# Software
+
+To install the software, first flash your Pico with [MicroPython firmware](https://micropython.org/download/rp2-pico/).
+
+Once done, use [mpremote](https://docs.micropython.org/en/latest/reference/mpremote.html), [rshell](https://github.com/dhylands/rshell) or [pyboard.py](https://github.com/micropython/micropython/blob/master/tools/pyboard.py) to copy the contents of the `python` directory onto the Pico.  With `mpremote`, this is done as follows:
+
+```
+mpremote fs cp python/*.py :
+```
+
+You can now start the controller using the following command:
+
+```
+mpremote run python/controller.py
+```
+
+This should show some debug output from the firmware.  To make the controller
+run automatically on boot, install `controller.py` as `main.py`:
+
+```
+mpremote fs cp python/controller.py :main.py
+```
