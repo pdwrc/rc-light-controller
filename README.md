@@ -25,7 +25,7 @@ the transmitter.  There are three different brake modes available:
 
 * Simple — brakes come on whenever the throttle is reversed
 * Smart — brakes come on on the first reverse action.  Subsequent actions are assumed to be reverse.
-* "Lift off" braking — brakes on for a fixed time after releasing the throttle
+* Drag brake mode — brakes on for a fixed time after releasing the throttle
 
 The controller has a configurable "soft on"/"soft off" setting, which makes
 LEDs look more like traditional incandescent bulbs.

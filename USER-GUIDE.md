@@ -202,7 +202,7 @@ The overall menu structure is shown below:
 1. Quit 
 2. Settings menu
     1. (Go up)
-    2. Channel mode (PWM) [ Switch/Throttle / Throttle/Steering ]
+    2. Channel mode (PWM) [ Switch+Throttle / Throttle+Steering ]
     3. Brake mode (PWM) [ Simple / Smart / Drag ]
     4. Soft on/off speed
     5. Handbrake mode (brake on secondary button) [ On / Off ]
