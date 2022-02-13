@@ -9,7 +9,7 @@ different brightnesses in different modes.
 The controller has two control modes:
 
 1. Standard RC inputs, referred to as "PWM Mode".
-2. Spektrum Smart mode.  This requires a Spektrum Smart receiver and ESC.
+2. Spektrum Smart mode.  This requires a Spektrum Smart receiver and ESC, and proides some additional functionality.
 
 The controller can be programmed and configured using either the button on the
 controller itself, or a switched AUX channel on your receiver.
@@ -252,3 +252,5 @@ In PWM mode, the controller can use one of three different modes for braking:
    resets, so the next reverse action is a brake.
 2. Drag brake mode — the brake lights come on for a short time whenever the throttle
    is released.
+
+This setting has no effect in Smart mode, as ESC telemetry to detect braking.
