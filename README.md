@@ -6,6 +6,10 @@ light controller for RC cars.
 The controller is intended to be highly configurable, and the firmware is open
 source, so it can be customised to do whatever you want.
 
+It can be used a simple remote switch, operated by an AUX channel on your
+transmitter, or it can provide multiple lighting modes, brake lights and turn
+signals.
+
 The controller is built around the Raspberry Pi Pico microcontroller, and if
 you're comfortable using a soldering iron, it can be assembled very easily from
 just a handful of components.
@@ -22,12 +26,17 @@ the transmitter.
 The controller has a configurable "soft on"/"soft off" setting, which makes
 LEDs look more like traditional incandescent bulbs.
 
+The controller can be configured and controlled using a single channel in a
+single direction, which means it can shared a channel with another function
+(e.g. handbrake).
+
 ## Spektrum Smart support
 
 The controller and software are optimised for use with Spektrum Smart receivers
 and ESCs.  When used in conjunction with a Smart ESC and receiver, additional
 functionality is available, as the controller can use telemetry data to detect
-when the car is moving and braking, 
+when the car is moving and braking, and has access to all RC control channels
+on a single cable.
 
 Additional features include:
 
@@ -40,6 +49,13 @@ A Spektrum Smart receiver and ESC communicate using the SRXL2 protocol rather
 than PWM.  This allows a single connection to get access to control data for
 all channels, and gives access to ESC telemetry data, which is useful for
 reliably detecting when the ESC is braking, and when the car is moving.
+
+## PWM mode
+
+If you're not using Spektrum Smart equipment, the controller will operate in
+"PWM mode".  This requires a separate input for each channel, e.g. two if you
+want an aux switch and throttle, three if you want to add steering for turn
+signals.
 
 # Software
 
@@ -54,12 +70,33 @@ mpremote fs cp python/*.py :
 You can now start the controller using the following command:
 
 ```
-mpremote run controller.py
+mpremote run python/controller.py
 ```
 
-This should show some debug output from the firmware.
+This should show some debug output from the firmware.  To make the controller
+run automatically on boot, install `controller.py` as `main.py`:
+
+```
+mpremote fs cp python/controller.py :main.py
+```
 
 # Hardware
+
+The light controller can be built as a DIY project using a Pi Pico
+microcontroller.  I also have a design for a custom PCB that combines all the
+required components onto a single, compact board. 
+
+## The PDWRC board
+
+The PDWRC v1 board is a pre-built, two-input, four-channel controller built
+around the Pico's RP2040 processor.  I am working on making these available for
+sale.  Please contact me for more information.
+
+<img src="images/pdwrcv1-board.jpg">
+
+<img src="images/pdwrcv1-case.jpg">
+
+## DIY Hardware
 
 As noted above, the controller uses the Raspberry Pi Pico microcontroller.  The
 controller needs a number of additional components in order to ensure that
@@ -81,7 +118,7 @@ The required circuit is shown in the schematic below:
 
 The schematic is also available as a [PDF](kicad/light-controller.pdf) 
 
-## Power supply
+### Power supply
 
 The "6V" in the schematic refers to whatever voltage your BEC is running at.
 
@@ -102,16 +139,19 @@ A normal diode is fine in place of the Schottky diode, and it probably isn't
 needed anyway.  It's to prevent the RC power supply from being back-powered by
 the Pico's USB port, if connected.
 
-## Input
+## Inputs
 
 The FET in the input pin is to prevent the Pico's input from seeing more than
-3.3V.  
+3.3V.  If you're using PWM mode, you'll need to add an additional FET and
+resistor for each channel you want to sample.  These can be connected to any
+GPIO port.
 
-The Spektrum Smart protocol uses 3.3V so in theory this isn't a problem if
-using Spektrum Smart equipment, but this provides protection should the ESC and
-receiver fail to enter Smart mode for any reason.
+The Spektrum Smart protocol uses 3.3V so in theory this isn't needed if using
+Spektrum Smart equipment, but this provides protection should the receiver fail
+to enter Smart mode for any reason.  This input needs to be connected to a pin
+that can be used as a UART input (e.g. GPIO 21).
 
-## Output
+### Output
 
 The schematic shows BS170s as the output drivers, as these can control a
 current of up to 500mA each.  2N7000 FETs could also be used, but these have a
@@ -120,7 +160,23 @@ limit of 200mA.
 More output channels can be added easily, up to the Pico's limit of 16 PWM
 output pins.
 
-## Status LED and hardware button
+### LED voltage
+
+The circuit shown above will power the LEDs from the BEC.  You should ensure
+that the LEDs have appropriate current-limiting resistors for your BEC voltage,
+and that the current drawn is within the BEC's capability.  LEDs designed to
+run off a BEC should have this already.
+
+If you want to run the LEDs at a different voltage, or directly from your main
+battery, that should work fine - simply remove the link between the "6V" BEC
+supply and the common positive input to the LEDs, and connect them to another
+power source.  If doing this, make sure that the supply shares a common ground
+with the BEC.
+
+This should make it possible to drive LEDs that require a specific voltage,
+such as the Traxxas 3V system.
+
+### Status LED and hardware button
 
 The status LED and hardware button are both optional.  The firmware will use
 the Pico's built in status LED, so this external LED simply allows you to use a
