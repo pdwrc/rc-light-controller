@@ -38,7 +38,7 @@ class Light:
 
     def menu_scale(self, level, menu):
         if menu:
-            return int(level * self.config.menu/100)
+            return level * self.config.menu/100
         return level
 
     def show_level(self, level):

@@ -9,8 +9,8 @@ import menu
 import telemetry
 import time
 from light import LightState, Light
-from animation import SimpleAnimation
-from config import LightConfig, RCMode
+from animation import SimpleAnimation, BreatheAnimation
+from config import LightConfig, RCMode, config
 from laststate import LastState
 
 
@@ -41,6 +41,9 @@ class Vehicle:
         self.primary_button = Button(self.primary_click)
         self.secondary_button = Button(self.handbrake_click)
         self.mode = None
+
+        self.last_movement = time.ticks_ms()
+        self.breathing = None
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -74,6 +77,8 @@ class Vehicle:
                 elif count > 1:
                     self.menu.start()
                     self.in_menu = True
+            if self.breathing:
+                self.stop_breathing()
         else:
             # moving
             if event == ButtonEvent.PRESS:
@@ -85,6 +90,8 @@ class Vehicle:
             self.lights_flash = False
             self.update()
 
+        self.last_movement = time.ticks_ms()
+
     def handbrake_click(self, event, count = None):
         if event == ButtonEvent.PRESS:
             self.handbrake = True
@@ -92,6 +99,7 @@ class Vehicle:
         elif event == ButtonEvent.RELEASE:
             self.handbrake = False
             self.update()
+        print("Handbrake %s" % str(self.handbrake))
 
     def level_setting(self, level):
         if self.in_menu:
@@ -141,12 +149,33 @@ class Vehicle:
 
             self.brakes_on = self.esc_braking or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
 
+    def stop_breathing(self):
+        for l in self.lights:
+            l.animate(None)
+        self.breathing = False
+
+    def update_breathe(self):
+        if self.moving or not self.throttle.neutral or not self.steering.neutral:
+            self.last_movement = time.ticks_ms()
+            if self.breathing:
+                self.stop_breathing()
+
+        now = time.ticks_ms()
+        if now - self.last_movement > 3000 and not self.breathing and not self.in_menu and not self.in_telemetry:
+            self.breathing = True
+            for l in self.lights:
+                if l.config.breathe > 0:
+                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe), now = now, loop = True)
+
+
+
     def update(self):
         if (self.moving or not self.throttle.neutral) and self.in_menu:
             self.config.save()
             self.in_menu = False
 
         self.update_brake()
+        self.update_breathe()
 
         if self.moving:
             self.in_telemetry = False

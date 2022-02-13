@@ -9,12 +9,13 @@ class RCMode:
 
 class LightConfig:
 
-    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, menu = 50):
+    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, breathe = 0, menu = 50):
         self.pin = pin
         self.mode1 = mode1
         self.mode2 = mode2
         self.brake = brake
         self.flash = flash
+        self.breathe = breathe
         self.menu = menu
 
     def as_dict(self):
@@ -23,7 +24,8 @@ class LightConfig:
             "mode1": self.mode1,
             "mode2": self.mode2,
             "flash": self.flash,
-            "brake": self.brake
+            "brake": self.brake,
+            "breathe": self.breathe,
         }
 
 class PWMMode:
@@ -37,7 +39,7 @@ class Config:
         self.lights = []
         lights = data.get("lights")
         if lights is not None:
-            self.lights = [ LightConfig(x.get("pin"), x.get("mode1", 0), x.get("mode2", 100), x.get("brake", 0), x.get("flash", 0)) for x in lights ]
+            self.lights = [ LightConfig(x.get("pin"), x.get("mode1", 0), x.get("mode2", 100), x.get("brake", 0), x.get("flash", 0), x.get("breathe",0)) for x in lights ]
         else:
             for pin in Pins.OUTPUTS:
                 self.lights.append(LightConfig(pin, 20, 100))
@@ -54,6 +56,8 @@ class Config:
         self.level_channel = data.get("level_channel", 6)
         self.level_channel_min = data.get("level_channel_min", 1250)
         self.level_channel_max = data.get("level_channel_max", 1750)
+        self.breathe_time = data.get("breathe_time", 2000)
+        self.breathe_gap = data.get("breathe_gap", 3000)
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
         self.throttle_channel = data.get("throttle_channel",1)
@@ -72,7 +76,7 @@ class Config:
     def save(self):
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
-        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake", "throttle_channel", "pwm_mode"):
+        for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", "fade_speed", "use_handbrake", "throttle_channel", "pwm_mode", "breathe_time", "breathe_gap"):
             data[x] = getattr(self, x)
 
         with open("config.json", "w") as fout:

@@ -2,7 +2,7 @@ from button import ButtonEvent
 import light
 from config import config
 import time
-from animation import SimpleAnimation
+from animation import SimpleAnimation, BreatheAnimation
 
 class MenuItem:
 
@@ -67,6 +67,17 @@ class LevelAdjusterMenuItem(MenuItem):
             self.update(self.level)
         return True
 
+    def animate(self, light = None, now = None):
+        pass
+
+    def animate_all(self):
+        now = time.ticks_ms()
+        for l in self.menu.vehicle.all_lights:
+            self.animate(l, now)
+
+    def activate(self):
+        self.animate_all()
+
 class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu, light, state):
@@ -88,7 +99,7 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
         super().__init__(menu, None, config.fade_speed)
-        self.cur_fadespeed = config.fade_speed/3;
+        self.cur_fadespeed = config.fade_speed
 
     def update(self, level):
         self.cur_fadespeed = level/3;
@@ -106,10 +117,39 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
     def save(self, level):
         config.fade_speed = self.cur_fadespeed
 
-    def activate(self):
-        now = time.ticks_ms()
-        for l in self.menu.vehicle.all_lights:
-            self.animate(l, now)
+class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
+
+    def __init__(self, menu):
+        super().__init__(menu, None, config.breathe_time)
+        self.cur_breathetime = config.breathe_time;
+
+    def update(self, level):
+        self.cur_breathetime = (level * 50) + 500;
+        # Restart animation
+        self.animate_all()
+
+    def animate(self, l, now = None):
+        l.animate(BreatheAnimation(self.cur_breathetime, config.breathe_gap), callback = self.animate, now = now, menu = True)
+
+    def save(self, level):
+        config.breathe_time = self.cur_breathetime
+
+class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
+
+    def __init__(self, menu):
+        super().__init__(menu, None, config.breathe_gap)
+        self.cur_breathegap = config.breathe_gap;
+
+    def update(self, level):
+        self.cur_breathegap = (level * 50) + 500;
+
+    def animate(self, l, now = None):
+        print("Animating")
+        l.animate(BreatheAnimation(config.breathe_time, self.cur_breathegap), callback = self.animate, now = now, menu = True)
+
+    def save(self, level):
+        config.breathe_gap = self.cur_breathegap
+
 
 class ToggleMenuItem(MenuItem):
 
@@ -141,6 +181,14 @@ class Menu:
         self.vehicle = vehicle
         self.menu = SubMenu(self)
         self.menu.add(QuitMenu(self))
+        self.menu.add(SubMenu(self, (
+                QuitMenu(self),
+                AdjustFadeSpeedMenuItem(self),
+                ToggleMenuItem(self, config, "use_handbrake"),
+                AdjustBreatheTimeMenuItem(self),
+                AdjustBreatheGapMenuItem(self),
+            )
+        ))
         for l in self.vehicle.lights:
             submenu = SubMenu(self, (
                 QuitMenu(self),
@@ -148,10 +196,9 @@ class Menu:
                 AdjustLightLevelMenuItem(self, l, "mode2"),
                 AdjustLightLevelMenuItem(self, l, "brake"),
                 AdjustLightLevelMenuItem(self, l, "flash"),
+                AdjustLightLevelMenuItem(self, l, "breathe"),
             ), light = l)
             self.menu.add(submenu)
-        self.menu.add(AdjustFadeSpeedMenuItem(self))
-        self.menu.add(ToggleMenuItem(self, config, "use_handbrake"))
 
     def start(self):
         self.menu_pos = 0
