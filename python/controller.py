@@ -10,7 +10,7 @@ import vehicle as veh
 from config import config, LightConfig, RCMode
 from pwm import detect_signal_type, PWMRCDriver
 from srxl2driver import SRXL2Driver
-from animation import Animation, BreatheAnimation
+from animation import Animation, BreatheAnimation, SimpleAnimation
 
 vehicle = veh.Vehicle(config)
 
@@ -71,7 +71,8 @@ def handle_control_packet(channel_data):
             if good_packets > 10:
                 init = True
                 for l in vehicle.lights:
-                    l.animate(SimpleAnimation.multi_flash(3))
+                    l.animate(SimpleAnimation.multi_flash(3), menu = True)
+                vehicle.startup_complete()
     else:
         for (ch, reverse), target in cm.items():
             v = channel_data.get(ch)
@@ -87,7 +88,7 @@ def handle_control_packet(channel_data):
                     state = ChannelState.NEUTRAL
                 if reverse:
                     state *= -1
-                target.update(state)
+                target.update(state, v - zero)
         if mode == RCMode.SMART:
             v = channel_data.get(config.level_channel)
             if v is not None:

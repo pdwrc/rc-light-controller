@@ -6,11 +6,12 @@ class Animation:
 
 class BreatheAnimation(Animation):
 
-    def __init__(self, breathe_time, gap, brightness = 100):
+    def __init__(self, breathe_time, gap, brightness = 100, off_brightness = 0):
         self.breathe_time = breathe_time
         self.gap = gap
         self.length = breathe_time + gap
         self.brightness = brightness
+        self.off_brightness = off_brightness
 
     def value(self, t, loop = False):
         if loop:
@@ -22,10 +23,12 @@ class BreatheAnimation(Animation):
         gamma = 0.14; # affects the width of peak (more or less darkness)
         beta = 0.5; # shifts the gaussian to be symmetric
 
-        if t > self.breathe_time:
-            return 0
+        min_brightness = self.brightness*self.off_brightness/100
 
-        return 10*(exp(-(pow(((t/self.breathe_time)-beta)/gamma,2.0))/2.0))*self.brightness/100
+        if t > self.breathe_time:
+            return min_brightness
+
+        return (exp(-(pow(((t/self.breathe_time)-beta)/gamma,2.0))/2.0))*(self.brightness-min_brightness) + min_brightness
         
 
 class SimpleAnimation(Animation):
@@ -79,3 +82,17 @@ class SimpleAnimation(Animation):
             t += anim.length
 
         return SimpleAnimation(animation)
+
+    def faded_flash(on, off, t, fade_speed = None):
+        if fade_speed is None:
+            fade_speed = config.config.fade_speed
+        flash_length = 5*fade_speed
+
+        return SimpleAnimation.join(
+                SimpleAnimation.fade(off, on, fade_speed), 
+                SimpleAnimation(((on, 0), (on, t-flash_length))),
+                SimpleAnimation.fade(on, off, fade_speed), 
+                SimpleAnimation(((off, 0), (off, t-flash_length)))
+            )
+
+

@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config
+from config import config, PWMMode
 import time
 from animation import SimpleAnimation, BreatheAnimation
 
@@ -105,13 +105,7 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
         self.cur_fadespeed = level/3;
 
     def animate(self, l, now = None):
-        flash_length = 5*self.cur_fadespeed
-        animation = SimpleAnimation.join(
-                SimpleAnimation.fade(0,100,self.cur_fadespeed), 
-                SimpleAnimation(((100,0), (100, 250-flash_length))),
-                SimpleAnimation.fade(100,0,self.cur_fadespeed), 
-                SimpleAnimation(((0,0),(0, 1000-flash_length)))
-                )
+        animation = SimpleAnimation.faded_flash(100, 0, 150, self.cur_fadespeed)
         l.animate(animation, callback = self.animate, now = now, menu = True)
 
     def save(self, level):
@@ -129,7 +123,7 @@ class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
         self.animate_all()
 
     def animate(self, l, now = None):
-        l.animate(BreatheAnimation(self.cur_breathetime, config.breathe_gap), callback = self.animate, now = now, menu = True)
+        l.animate(BreatheAnimation(self.cur_breathetime, config.breathe_gap, off_brightness = config.sleep_off_brightness), callback = self.animate, now = now, menu = True)
 
     def save(self, level):
         config.breathe_time = self.cur_breathetime
@@ -150,28 +144,53 @@ class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
     def save(self, level):
         config.breathe_gap = self.cur_breathegap
 
+class MultiSelectMenuItem(MenuItem):
 
-class ToggleMenuItem(MenuItem):
-
-    def __init__(self, menu, obj, prop):
+    def __init__(self, menu, obj, prop, values):
         super().__init__(menu)
-        self.obj = obj
         self.prop = prop
-        self.cur_value = getattr(obj, prop)
+        self.values = values
+        self.obj = obj
+        try:
+            self.cur_value = values.index(getattr(obj, prop))
+        except ValueError:
+            self.cur_value = values[0]
 
     def update(self):
         for l in self.menu.vehicle.all_lights:
-            l.set_level((100 if self.cur_value else 0), menu = True)
+            l.set_level(100 * self.cur_value / len(self.values), menu = True)
 
     def activate(self):
         self.update()
 
     def click(self, event):
         if event == ButtonEvent.SHORT_CLICK:
-            self.cur_value = not self.cur_value
+            self.cur_value = (self.cur_value + 1) % len(self.values)
+            print("Menu: %s Value %s" % (self.prop, self.values[self.cur_value]))
             self.update()
         if event == ButtonEvent.LONG_CLICK:
-            setattr(self.obj, self.prop, self.cur_value)
+            setattr(self.obj, self.prop, self.values[self.cur_value])
+            return False
+        return True
+
+class ToggleMenuItem(MultiSelectMenuItem):
+
+    def __init__(self, menu, obj, prop):
+        super().__init__(menu, obj, prop, [False, True])
+
+class SteeringThresholdMenuItem(MenuItem):
+
+    def __init__(self, menu):
+        super().__init__(menu)
+
+    def click(self, event):
+        if event == ButtonEvent.LONG_CLICK:
+            pos = self.menu.vehicle.steering.position
+            if pos is not None:
+                ths = abs(pos)
+                if ths > 20:
+                    config.steering_threshold = ths
+                    print("Updating steering threshold to %d" % ths)
             return False
         return True
 
@@ -183,10 +202,18 @@ class Menu:
         self.menu.add(QuitMenu(self))
         self.menu.add(SubMenu(self, (
                 QuitMenu(self),
+                MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST]),
                 AdjustFadeSpeedMenuItem(self),
                 ToggleMenuItem(self, config, "use_handbrake"),
-                AdjustBreatheTimeMenuItem(self),
-                AdjustBreatheGapMenuItem(self),
+                SteeringThresholdMenuItem(self),
+                SubMenu(self, (
+                    QuitMenu(self),
+                    MultiSelectMenuItem(self, config, "sleep_delay", [0, 5, 10, 30, 60]),
+                    ToggleMenuItem(self, config, "sleep_when_lights_on"),
+                    AdjustBreatheTimeMenuItem(self),
+                    AdjustBreatheGapMenuItem(self),
+                    MultiSelectMenuItem(self, config, "sleep_off_brightness", [0, 10, 20, 30, 50]),
+                ))
             )
         ))
         for l in self.vehicle.lights:
@@ -196,6 +223,8 @@ class Menu:
                 AdjustLightLevelMenuItem(self, l, "mode2"),
                 AdjustLightLevelMenuItem(self, l, "brake"),
                 AdjustLightLevelMenuItem(self, l, "flash"),
+                AdjustLightLevelMenuItem(self, l, "turn_left"),
+                AdjustLightLevelMenuItem(self, l, "turn_right"),
                 AdjustLightLevelMenuItem(self, l, "breathe"),
             ), light = l)
             self.menu.add(submenu)
@@ -245,14 +274,14 @@ class Menu:
                     self.menu_pos = 0
                     self.flash_all(self.menu_pos + 1)
                     item.items[0].select()
-                elif isinstance(item, (LevelAdjusterMenuItem, ToggleMenuItem)):
+                elif isinstance(item, (LevelAdjusterMenuItem, MultiSelectMenuItem, SteeringThresholdMenuItem)):
                     self.menu_stack.append((item, self.menu_pos))
                     item.activate()
                 if type(item) == QuitMenu:
                     if not self.go_up():
                         return False
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
-        elif isinstance(cur_menu, (LevelAdjusterMenuItem, ToggleMenuItem)):
+        elif isinstance(cur_menu, (LevelAdjusterMenuItem, MultiSelectMenuItem, SteeringThresholdMenuItem)):
             if not cur_menu.click(event):
                 self.go_up()
             print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))

@@ -4,15 +4,20 @@ except ModuleNotFoundError:
     from machine_mock import Pin, PWM
 
 from button import ButtonEvent, Button
-from channel import Channel
+from channel import Channel, SteeringChannel
 import menu
 import telemetry
 import time
 from light import LightState, Light
 from animation import SimpleAnimation, BreatheAnimation
-from config import LightConfig, RCMode, config
+from config import LightConfig, RCMode, config, BrakeMode
 from laststate import LastState
 
+
+class Turn:
+    NONE = 0
+    LEFT = 1
+    RIGHT = -1
 
 class Vehicle:
 
@@ -37,13 +42,17 @@ class Vehicle:
         self.status_led = Light(LightConfig(config.status_led_pins, 0, 100, menu = 100), no_pwm = True)
 
         self.throttle = Channel()
-        self.steering = Channel()
+        self.steering = SteeringChannel()
         self.primary_button = Button(self.primary_click)
         self.secondary_button = Button(self.handbrake_click)
         self.mode = None
 
         self.last_movement = time.ticks_ms()
-        self.breathing = None
+        self.sleeping = False
+        self.turning = Turn.NONE
+        self.startup = True
+        self.braked_once = False
+        self.timed_brake = 0
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -77,8 +86,8 @@ class Vehicle:
                 elif count > 1:
                     self.menu.start()
                     self.in_menu = True
-            if self.breathing:
-                self.stop_breathing()
+            if self.sleeping:
+                self.stop_sleeping()
         else:
             # moving
             if event == ButtonEvent.PRESS:
@@ -91,6 +100,10 @@ class Vehicle:
             self.update()
 
         self.last_movement = time.ticks_ms()
+
+    def startup_complete(self):
+        self.last_movement = time.ticks_ms()
+        self.startup = False
 
     def handbrake_click(self, event, count = None):
         if event == ButtonEvent.PRESS:
@@ -133,7 +146,30 @@ class Vehicle:
 
     def update_brake(self):
         if self.mode == RCMode.PWM:
-            self.brakes_on = self.throttle.reverse
+            if config.pwm_brake_mode == BrakeMode.SIMPLE:
+                self.brakes_on = self.throttle.reverse
+            elif config.pwm_brake_mode == BrakeMode.SMART:
+                if self.throttle.reverse and not self.braked_once:
+                    self.brakes_on = True
+                else:
+                    if not self.throttle.reverse and self.brakes_on:
+                        self.braked_once = True
+                    elif self.throttle.forward:
+                        self.braked_once = False
+                    self.brakes_on = False
+            elif config.pwm_brake_mode == BrakeMode.LIFT_OFF_DELAY:
+                if self.throttle.neutral:
+                    if self.timed_brake is None:
+                        self.timed_brake = time.ticks_ms()
+                        self.brakes_on = True
+                    elif time.ticks_ms() - self.timed_brake < 1000:
+                        self.brakes_on = True
+                    else:
+                        self.brakes_on = False
+                else:
+                    self.brakes_on = False
+                    self.timed_brake = None
+
         else:
             # Quick brake shows the brake light as soon as the throttle is
             # reversed for up to 0.25s if we're confident that we're moving
@@ -149,41 +185,72 @@ class Vehicle:
 
             self.brakes_on = self.esc_braking or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
 
-    def stop_breathing(self):
+    def update_steering(self):
+        now = time.ticks_ms()
+        if self.steering.right:
+            if self.turning != Turn.RIGHT:
+                for l in self.lights:
+                    if l.config.turn_right > 0:
+                        l.animate(SimpleAnimation.faded_flash(l.config.turn_right, 0, 500), now = now, loop = True)
+                        self.turning = Turn.RIGHT
+                    else: 
+                        l.animate(None)
+        elif self.steering.left:
+            if self.turning != Turn.LEFT:
+                for l in self.lights:
+                    if l.config.turn_left > 0:
+                        l.animate(SimpleAnimation.faded_flash(l.config.turn_left, 0, 500), now = now, loop = True)
+                        self.turning = Turn.LEFT
+                    else: 
+                        l.animate(None)
+        elif self.turning != Turn.NONE:
+            for l in self.lights:
+                l.animate(None)
+            self.turning = Turn.NONE
+
+                
+
+
+
+    def stop_sleeping(self):
         for l in self.lights:
             l.animate(None)
-        self.breathing = False
+        self.sleeping = False
 
     def update_breathe(self):
         if self.moving or not self.throttle.neutral or not self.steering.neutral:
             self.last_movement = time.ticks_ms()
-            if self.breathing:
-                self.stop_breathing()
+            if self.sleeping:
+                self.stop_sleeping()
 
         now = time.ticks_ms()
-        if now - self.last_movement > 3000 and not self.breathing and not self.in_menu and not self.in_telemetry:
-            self.breathing = True
+        if (now - self.last_movement > config.sleep_delay*1000 and not self.sleeping 
+            and not self.in_menu and not self.in_telemetry 
+            and (self.light_state == LightState.OFF or config.sleep_when_lights_on)):
+            self.sleeping = True
             for l in self.lights:
                 if l.config.breathe > 0:
-                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe), now = now, loop = True)
-
-
+                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = config.sleep_off_brightness), now = now, loop = True)
+                else:
+                    l.set_level(0)
 
     def update(self):
-        if (self.moving or not self.throttle.neutral) and self.in_menu:
-            self.config.save()
-            self.in_menu = False
+        if not self.startup:
+            if (self.moving or not self.throttle.neutral) and self.in_menu:
+                self.config.save()
+                self.in_menu = False
 
-        self.update_brake()
-        self.update_breathe()
+            self.update_brake()
+            self.update_breathe()
+            self.update_steering()
 
-        if self.moving:
-            self.in_telemetry = False
+            if self.moving:
+                self.in_telemetry = False
 
         now = time.ticks_ms()
 
         for light in self.lights:
-            if self.in_menu or self.in_telemetry:
+            if self.in_menu or self.in_telemetry or self.sleeping or self.startup:
                 light.tick(now)
             else:
                 light.update(now, self.light_state, self.brakes_on or (self.handbrake and self.config.use_handbrake), self.lights_flash)
