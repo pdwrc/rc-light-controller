@@ -18,17 +18,18 @@ controller itself, or a switched AUX channel on your receiver.
 
 ## PWM Mode
 
-The controller supports up to two inputs.  These can be any of the following combinations:
+The controller can be connected to up to two RC channels.  These can be any of
+the following combinations:
 
-1. Input 1: Switch (Aux)
-2. Input 1: Throttle
-3. Input 1: Switch (Aux), Input 2: Throttle
-4. Input 1: Throttle, Input 2: Steering
+* Input 1 = Switch (Aux)
+* Input 1 = Throttle
+* Input 1 = Switch (Aux) / Input 2 = Throttle
+* Input 1 = Throttle / Input 2 = Steering
 
 Connect the receiver to the light controller using either Y-cables, or, if
 there's a free port for the channel, a straight cable.
 
-In modes 2 and 4, configuration is done using a button on the controller.
+In modes 2 and 4, controller configuration is done using a button 1 on the controller.
 
 ## Smart Mode for Spektrum Smart ESC and Receiver
 
@@ -254,3 +255,16 @@ In PWM mode, the controller can use one of three different modes for braking:
    is released.
 
 This setting has no effect in Smart mode, as ESC telemetry to detect braking.
+
+# Firmware updates
+
+To install new firmware, ensure that the controller is powered off, then hold
+down button 2 while connecting a USB cable to a computer.  The button can be
+released as soon as the cable is connected.  The controller should appear as a
+USB disk called "RPI-RP2".  Simply copy the provided `.uf2` file onto this
+drive.  After a few seconds, the disk will disappear, and the controller will
+restart.  You can then disconnect the USB cable.
+
+
+
+
