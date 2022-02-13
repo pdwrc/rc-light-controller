@@ -215,20 +215,20 @@ The overall menu structure is shown below:
         * 4\. Pulse duration
         * 5\. Off duration
         * 6\. Off brightness
-* 3\. Channel 1 configuration
-    * 1\. Go up
-    * 2\. Mode 1
-    * 3\. Mode 2
-    * 4\. Brake
-    * 5\. Flash
+* 3\. Light channel 1 menu
+    * 1\. (Go up)
+    * 2\. Mode 1 brightness
+    * 3\. Mode 2 brightness
+    * 4\. Brake brightness
+    * 5\. Flash brightness
     * 6\. Left turn brightness
     * 7\. Right turn brightness
     * 8\. Sleep brightness
-* 4\. Channel 2 configuration 
+* 4\. Channel 2 menu 
     * _As for channel 1_
-* 5\. Channel 3 configuration
+* 5\. Channel 3 menu
     * _As for channel 1_
-* 6\. Channel 4 configuration
+* 6\. Channel 4 menu
     * _As for channel 1_
 
 ### Settings
