@@ -2,6 +2,7 @@ from button import ButtonEvent
 import light
 from config import config
 import time
+from animation import SimpleAnimation
 
 class MenuItem:
 
@@ -47,7 +48,7 @@ class LevelAdjusterMenuItem(MenuItem):
         super().__init__(menu, light)
         self.level = initial_value
         self.last_input_level = None
-        self.update(initial_value)
+#        self.update(initial_value)
 
     def level_setting(self, level):
         # Only adjust the level if it's changed, so we don't override the
@@ -87,17 +88,18 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
         super().__init__(menu, None, config.fade_speed)
+        self.cur_fadespeed = config.fade_speed/3;
 
     def update(self, level):
         self.cur_fadespeed = level/3;
 
     def animate(self, l, now = None):
         flash_length = 5*self.cur_fadespeed
-        animation = light.Animation.join(
-                light.Animation.fade(0,100,self.cur_fadespeed), 
-                ((100,0), (100, 250-flash_length)), 
-                light.Animation.fade(100,0,self.cur_fadespeed), 
-                ((0,0),(0, 1000-flash_length))
+        animation = SimpleAnimation.join(
+                SimpleAnimation.fade(0,100,self.cur_fadespeed), 
+                SimpleAnimation(((100,0), (100, 250-flash_length))),
+                SimpleAnimation.fade(100,0,self.cur_fadespeed), 
+                SimpleAnimation(((0,0),(0, 1000-flash_length)))
                 )
         l.animate(animation, callback = self.animate, now = now, menu = True)
 
@@ -155,7 +157,7 @@ class Menu:
         self.menu_pos = 0
         self.menu_depth = 0 
         for l in self.vehicle.all_lights:
-            l.animate(light.Animation.multi_flash(1), menu = True)
+            l.animate(SimpleAnimation.multi_flash(1), menu = True)
         self.menu_stack = [(self.menu, 0)]
         self.clear_all()
 
@@ -164,7 +166,7 @@ class Menu:
 
     def flash_all(self, n):
         for l in self.vehicle.all_lights:
-            l.animate(light.Animation.multi_flash(n), menu = True)
+            l.animate(SimpleAnimation.multi_flash(n), menu = True)
 
     def clear_all(self):
         for l in self.vehicle.all_lights:

@@ -5,45 +5,13 @@ except ModuleNotFoundError:
 
 import time
 import config
+from animation import SimpleAnimation
 
 class LightState:
     OFF = 0
     LOW = 1
     HIGH = 2
 
-class Animation:
-    double_flash = ((0, 0), (100, 100), (0, 250), (100, 350), (0, 500), (0, 900))
-
-    def multi_flash(n, start = 150, on = 150, off = 150, invert = False):
-        seq = [(0,0)]
-        a = 75 if not invert else 0
-        b = 0 if not invert else 75
-        for i in range(n):
-            seq.append((a, start + (on+off) * i))
-            seq.append((b, start + (on+off) * i + on))
-        seq.append((b,n * (on+off) + off))
-        return seq
-
-    simple_flash = ((100, 0), (0, 50), (0, 100))
-    pulse = (
-            (0, 0), (20, 50), (40, 100), (60, 150), (40, 200), (20, 250), (0, 300),
-            (20, 350), (40, 400), (60, 450), (40, 500), (20, 550), (0, 600))
-
-    def fade(from_level, to_level, speed = None):
-        if speed is None:
-            speed = config.config.fade_speed
-        step = (to_level - from_level) / 5
-        return list((int(from_level + step * x), x * speed) for x in range(5))
-
-    def join(*args):
-        t = 0
-        animation = []
-        for anim in args:
-            for (val, tt) in anim:
-                animation.append((val, tt + t))
-            t += anim[-1][1]
-
-        return animation
 
 
 class Light:
@@ -61,8 +29,8 @@ class Light:
         else:
             self.pwms = list(PWM(Pin(pin, Pin.OUT)) for pin in self.pins)
             for pwm in self.pwms:
-                pwm.freq(1000)
                 pwm.duty_u16(0)
+                pwm.freq(1000)
         self.level = 0
         self.animation = None
         self.cur_level = None
@@ -104,7 +72,7 @@ class Light:
             else:
                 new_level = 0
             if new_level != self.level:
-                self.animate(Animation.fade(self.level, new_level))
+                self.animate(SimpleAnimation.fade(self.level, new_level))
             self.set_level(new_level)
 
     def animate(self, animation, callback = None, loop = False, now = None, menu = False):
@@ -114,7 +82,7 @@ class Light:
             self.animation = animation
             self.animation_loop = loop
             self.animation_callback = callback
-            self.show_level(self.menu_scale(animation[0][0], menu))
+            self.show_level(self.menu_scale(animation.value(0), menu))
         else:
             self.animation = None
             self.show_level(self.level)
@@ -124,18 +92,13 @@ class Light:
             now = time.ticks_ms()
         if self.animation is not None:
             t = now - self.animation_start
-            for i, (value, ta) in enumerate(self.animation):
-                if t > ta and (i == len(self.animation) - 1 or t < self.animation[i+1][1]):
-                    self.show_level(self.menu_scale(value, self.menu_animation))
-
-                    if i == len(self.animation) - 1:
-                        if self.animation_loop:
-                            self.animate(self.animation, loop = True) #, now = 2 * now - self.animation_start - self.animation[-1][1] , loop = True)
-                        else:
-                            self.animation = None
-                            if self.animation_callback is not None:
-                                self.animation_callback(self, now)
-
+            value = self.animation.value(t, self.animation_loop)
+            if value is None:
+                self.animation = None
+                if self.animation_callback is not None:
+                    self.animation_callback(self, now)
+            else:
+                self.show_level(self.menu_scale(value, self.menu_animation))
         else:
             self.show_level(self.level)
 

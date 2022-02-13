@@ -1,9 +1,8 @@
 from machine import UART, Pin, time_pulse_us
 import rp2
 import time
-
-from light import Animation
 from config import RCMode
+from animation import SimpleAnimation
 
 #https://github.com/GitJer/PwmIn/blob/main/PwmIn.pio
 
@@ -64,7 +63,7 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
     gaps = []
     last_gap_pwm = None
 
-    vehicle.status_led.animate(Animation.simple_flash, loop = True)
+    vehicle.status_led.animate(SimpleAnimation.flash(), loop = True)
     hardware_button_clicked = False
             
     while len(gaps) < 50:

@@ -1,5 +1,6 @@
 import time
 time.sleep(1)
+
 from machine import UART, Pin, time_pulse_us
 import struct
 import light
@@ -9,9 +10,10 @@ import vehicle as veh
 from config import config, LightConfig, RCMode
 from pwm import detect_signal_type, PWMRCDriver
 from srxl2driver import SRXL2Driver
-
+from animation import Animation, BreatheAnimation
 
 vehicle = veh.Vehicle(config)
+
 status_led = vehicle.status_led
 
 #smart_buttons = (
@@ -28,7 +30,7 @@ if config.hardware_button_pin is not None:
     hardware_button_pin = Pin(config.hardware_button_pin, Pin.IN, Pin.PULL_DOWN)
 else:
     hardware_button_pin = None
-hardware_button = Button(None, vehicle.primary_click)
+hardware_button = Button(vehicle.primary_click)
 
 init = False
 good_packets = 0
@@ -69,7 +71,7 @@ def handle_control_packet(channel_data):
             if good_packets > 10:
                 init = True
                 for l in vehicle.lights:
-                    l.animate(light.Animation.multi_flash(3))
+                    l.animate(SimpleAnimation.multi_flash(3))
     else:
         for (ch, reverse), target in cm.items():
             v = channel_data.get(ch)
@@ -98,7 +100,7 @@ def handle_control_packet(channel_data):
     if packet_count >= 100:
         if not hardware_button.pressed and not vehicle.in_menu and not vehicle.in_telemetry:
             vehicle.status_led.set_level(100 if mode == RCMode.SMART else 0)
-            vehicle.status_led.animate(light.Animation.multi_flash(1 if init else 2, 75, 75, 50, invert = mode == RCMode.SMART))
+            vehicle.status_led.animate(SimpleAnimation.multi_flash(1 if init else 2, 75, 75, 50, invert = mode == RCMode.SMART))
         packet_count = 0
 
 

@@ -22,11 +22,10 @@ class Button:
         self.pressed = None
         self.released = None
         self.extra_long_click_sent = 0
-        self.reverse = reverse
         self.multi_click = 0
 
     def update(self, state):
-        pressed = (state == ChannelState.FORWARD and not self.reverse) or (state == ChannelState.REVERSE and self.reverse)
+        pressed = (state == ChannelState.FORWARD)
         if pressed and self.pressed is None:
             # debounce
             if self.released is None or time.ticks_ms() - self.released > 50:

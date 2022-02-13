@@ -1,4 +1,4 @@
-from light import Animation
+from animation import SimpleAnimation
 from button import ButtonEvent
 
 class Telemetry:
@@ -25,9 +25,9 @@ class Telemetry:
         a = []
         for v in values:
             a.append(((0,750),))
-            a.append(Animation.multi_flash(v, on = 250, off = 250))
+            a.append(SimpleAnimation.multi_flash(v, on = 250, off = 250))
         a.append(((0,750),))
-        return Animation.join(*a)
+        return SimpleAnimation.join(*a)
 
     def do_voltage_animation(self, voltage):
         anim = self.voltage_animation(voltage)

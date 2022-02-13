@@ -8,7 +8,8 @@ from channel import Channel
 import menu
 import telemetry
 import time
-from light import LightState, Light, Animation
+from light import LightState, Light
+from animation import SimpleAnimation
 from config import LightConfig, RCMode
 from laststate import LastState
 
@@ -65,7 +66,7 @@ class Vehicle:
                 # animations.
                 for l in self.all_lights:
                     l.set_level(0)
-                    l.animate(Animation.multi_flash(1))
+                    l.animate(SimpleAnimation.multi_flash(1))
             elif event == ButtonEvent.EXTRA_LONG_CLICK:
                 if count == 1:
                     self.telemetry.start()
@@ -125,7 +126,6 @@ class Vehicle:
     def update_brake(self):
         if self.mode == RCMode.PWM:
             self.brakes_on = self.throttle.reverse
-            print("PWM brakes: %s" % str(self.brakes_on))
         else:
             # Quick brake shows the brake light as soon as the throttle is
             # reversed for up to 0.25s if we're confident that we're moving
