@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode
+from config import config, PWMMode, BrakeMode
 import time
 from animation import SimpleAnimation, BreatheAnimation
 
@@ -203,6 +203,7 @@ class Menu:
         self.menu.add(SubMenu(self, (
                 QuitMenu(self),
                 MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST]),
+                MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY]),
                 AdjustFadeSpeedMenuItem(self),
                 ToggleMenuItem(self, config, "use_handbrake"),
                 SteeringThresholdMenuItem(self),

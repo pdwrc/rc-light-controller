@@ -83,7 +83,7 @@ class Config:
         self.use_handbrake = data.get("use_handbrake", True)
         self.throttle_channel = data.get("throttle_channel",1)
         self.steering_threshold = data.get("steering_threshold", 100)
-        self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.LIFT_OFF_DELAY)
+        self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
         self.hardware_button_pin = Pins.BUTTON
         self.input_pins = Pins.INPUTS
         self.status_led_pins = Pins.STATUS_LEDS
