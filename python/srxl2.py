@@ -47,6 +47,7 @@ class SRXL2Control(SRXL2Packet):
     def __init__(self, packet):
         super().__init__(packet)
         self.channel_data = {}
+        self.pwm_channel_data = {}
         i = self._header_size_ + 1
 
         if self.command != 0:
@@ -57,6 +58,7 @@ class SRXL2Control(SRXL2Packet):
                 if len(packet) < i + 2:
                     raise SRXL2InvalidPacketException("Short packet")
                 self.channel_data[n+1] = struct.unpack('<H', packet[i:i+2])[0]
+                self.pwm_channel_data[n+1] = int(1000 + (1000*self.channel_data[n+1]/0xFFFF))
                 i += 2
 
     def __repr__(self):

@@ -3,12 +3,13 @@ try:
 except ModuleNotFoundError:
     from machine_mock import Pin, PWM
 
-from button import ButtonEvent
+from button import ButtonEvent, Button
+from channel import Channel
 import menu
 import telemetry
 import time
 from light import LightState, Light, Animation
-from config import LightConfig
+from config import LightConfig, RCMode
 from laststate import LastState
 
 
@@ -29,10 +30,16 @@ class Vehicle:
         self.voltage = None
         self.low_voltage = None
         self.cells = None
-        self.throttle = None
         self.reversing = False
+        self.esc_braking = False
         self.quick_brake = None
         self.status_led = Light(LightConfig(config.status_led_pins, 0, 100, menu = 100), no_pwm = True)
+
+        self.throttle = Channel()
+        self.steering = Channel()
+        self.primary_button = Button(self.primary_click)
+        self.secondary_button = Button(self.handbrake_click)
+        self.mode = None
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -104,21 +111,9 @@ class Vehicle:
                 print("Reversing")
             else:
                 print("Forwards")
+
         self.moving = moving
-
-        # Quick brake shows the brake light as soon as the throttle is
-        # reversed for up to 0.25s if we're confident that we're moving
-        # forwards.  This avoids the short delay from waiting for telemetry to
-        # detect braking.
-        if self.throttle.reverse:
-            if self.quick_brake is None and not self.reversing and self.moving:
-                self.quick_brake = time.ticks_ms() 
-                print("Quick brake")
-        else:
-            # Reset quick brake if throttle neutral
-            self.quick_brake = None
-
-        self.brakes_on = brakes or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
+        self.esc_braking = brakes
 
         if self.voltage is None and voltage is not None:
             self.cells = self.calculate_cells(voltage)
@@ -126,12 +121,32 @@ class Vehicle:
         self.voltage = voltage
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage
-        self.update()
+
+    def update_brake(self):
+        if self.mode == RCMode.PWM:
+            self.brakes_on = self.throttle.reverse
+            print("PWM brakes: %s" % str(self.brakes_on))
+        else:
+            # Quick brake shows the brake light as soon as the throttle is
+            # reversed for up to 0.25s if we're confident that we're moving
+            # forwards.  This avoids the short delay from waiting for telemetry to
+            # detect braking.
+            if self.throttle.reverse:
+                if self.quick_brake is None and not self.reversing and self.moving:
+                    self.quick_brake = time.ticks_ms() 
+                    print("Quick brake")
+            else:
+                # Reset quick brake if throttle neutral
+                self.quick_brake = None
+
+            self.brakes_on = self.esc_braking or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
 
     def update(self):
-        if self.moving and self.in_menu:
+        if (self.moving or not self.throttle.neutral) and self.in_menu:
             self.config.save()
             self.in_menu = False
+
+        self.update_brake()
 
         if self.moving:
             self.in_telemetry = False

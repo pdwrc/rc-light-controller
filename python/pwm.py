@@ -3,12 +3,10 @@ import rp2
 import time
 
 from light import Animation
+from config import RCMode
 
 #https://github.com/GitJer/PwmIn/blob/main/PwmIn.pio
 
-class RCMode:
-    PWM = 0
-    SMART = 1
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
 def time_gap():

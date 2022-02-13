@@ -3,6 +3,10 @@ import os
 
 from pins import Pins
 
+class RCMode:
+    PWM = 0
+    SMART = 1
+
 class LightConfig:
 
     def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, menu = 50):
@@ -48,8 +52,8 @@ class Config:
         self.handbrake_button_channel = data.get("handbrake_button_channel", 8)
         self.handbrake_button_reverse = data.get("handbrake_button_reverse", True)
         self.level_channel = data.get("level_channel", 6)
-        self.level_channel_min = data.get("level_channel_min", 11000)
-        self.level_channel_max = data.get("level_channel_min", 43000)
+        self.level_channel_min = data.get("level_channel_min", 1250)
+        self.level_channel_max = data.get("level_channel_max", 1750)
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
         self.throttle_channel = data.get("throttle_channel",1)
@@ -77,6 +81,25 @@ class Config:
 
         return
 
+    def channel_map(self, mode, vehicle):
+        cm = {}
+        if mode == RCMode.SMART:
+            cm[(self.primary_button_channel, self.primary_button_reverse)] = vehicle.primary_button
+            cm[(self.handbrake_button_channel, self.handbrake_button_reverse)] = vehicle.secondary_button
+            cm[(self.throttle_channel, False)] = vehicle.throttle
+        else:
+            if self.pwm_mode == PWMMode.SW_TH:
+                cm[1, False] = vehicle.primary_button
+                cm[1, True] = vehicle.secondary_button
+                if len(self.input_pins) > 1:
+                    cm[2, False] = vehicle.throttle
+            elif self.pwm_mode == PWMMode.TH_ST:
+                cm[1, False] = vehicle.throttle
+                if len(self.input_pins) > 1:
+                    cm[2, False] = vehicle.steering
+
+        return cm
+        
 
 config = Config.load()
 

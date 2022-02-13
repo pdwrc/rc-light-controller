@@ -15,10 +15,9 @@ class ButtonEvent:
 
 
 class Button:
-    threshold = 65
+    threshold = 20
 
-    def __init__(self, channel, callback, reverse = False):
-        self.channel = channel
+    def __init__(self,  callback):
         self.callback = callback
         self.pressed = None
         self.released = None

@@ -19,7 +19,7 @@ class SRXL2Driver:
             if len(self.rx) > 2 and len(self.rx) >= self.rx[2]:
                 packet = self.srxl2.parse(self.rx)
                 if type(packet) == SRXL2Control:
-                    self.control_callback(packet.channel_data)
+                    self.control_callback(packet.pwm_channel_data)
                 elif type(packet) == SRXL2Telemetry and packet.is_esc_telemetry:
                     self.telemetry_callback(packet)
                 self.rx = self.rx[self.rx[2]:]

@@ -1,28 +1,28 @@
-from machine import UART, Pin, time_pulse_us
 import time
+time.sleep(1)
+from machine import UART, Pin, time_pulse_us
 import struct
 import light
 from button import Button
 from channel import ChannelState, Channel
 import vehicle as veh
-from config import config, LightConfig
-from pwm import detect_signal_type, PWMRCDriver, RCMode
+from config import config, LightConfig, RCMode
+from pwm import detect_signal_type, PWMRCDriver
 from srxl2driver import SRXL2Driver
-
 
 
 vehicle = veh.Vehicle(config)
 status_led = vehicle.status_led
 
-smart_buttons = (
-        Button(config.primary_button_channel, vehicle.primary_click, reverse=config.primary_button_reverse),
-        Button(config.handbrake_button_channel, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
-        )
+#smart_buttons = (
+#        Button(config.primary_button_channel, vehicle.primary_click, reverse=config.primary_button_reverse),
+#        Button(config.handbrake_button_channel, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
+#        )
 
-pwm_buttons = (
-        Button(1, vehicle.primary_click, reverse=config.primary_button_reverse),
-        Button(1, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
-        )
+#pwm_buttons = (
+#        Button(1, vehicle.primary_click, reverse=config.primary_button_reverse),
+#        Button(1, vehicle.handbrake_click, reverse=config.handbrake_button_reverse),
+#        )
 
 if config.hardware_button_pin is not None:
     hardware_button_pin = Pin(config.hardware_button_pin, Pin.IN, Pin.PULL_DOWN)
@@ -52,15 +52,17 @@ def handle_hardware_button():
 def handle_control_packet(channel_data):
     global init
     global good_packets
+    cm = config.channel_map(mode, vehicle)
     if not init:
-        print(channel_data)
         ok = True
-        for b in channels:
-            v = channel_data.get(b.channel)
+        for ch, reverse in cm.keys():
+            v = channel_data.get(ch)
+            if v is None and mode == RCMode.PWM and ch > 1:
+                v = 1500
             if v is None:
                 ok = False
             else:
-                channel_zeros[b.channel] = v
+                channel_zeros[ch] = v
         # For SMART, we only calibrate after we see channel 10 disappear.
         if ok and ((10 not in channel_data and channel_data != {}) or mode == RCMode.PWM):
             good_packets += 1
@@ -69,23 +71,28 @@ def handle_control_packet(channel_data):
                 for l in vehicle.lights:
                     l.animate(light.Animation.multi_flash(3))
     else:
-        for b in channels:
-            v = channel_data.get(b.channel)
+        for (ch, reverse), target in cm.items():
+            v = channel_data.get(ch)
             if v is not None:
-                zero = channel_zeros.get(b.channel, 0x8000)
-                if v > zero + b.threshold:
+                zero = channel_zeros.get(ch, 0x8000)
+                #if ch == 1:
+                #    print("%d vs %d + %d" % (v, zero, target.threshold))
+                if v > zero + target.threshold:
                     state = ChannelState.FORWARD
-                elif v < zero - b.threshold:
+                elif v < zero - target.threshold:
                     state = ChannelState.REVERSE
                 else:
                     state = ChannelState.NEUTRAL
-                b.update(state)
-        v = channel_data.get(config.level_channel)
-        if v is not None:
-            level = int(100 * (v - config.level_channel_min) / (config.level_channel_max - config.level_channel_min))
-            level = max(level, 0)
-            level = min(level, 100)
-            vehicle.level_setting(level)
+                if reverse:
+                    state *= -1
+                target.update(state)
+        if mode == RCMode.SMART:
+            v = channel_data.get(config.level_channel)
+            if v is not None:
+                level = int(100 * (v - config.level_channel_min) / (config.level_channel_max - config.level_channel_min))
+                level = max(level, 0)
+                level = min(level, 100)
+                vehicle.level_setting(level)
     global packet_count
     packet_count += 1
     if packet_count >= 100:
@@ -96,17 +103,14 @@ def handle_control_packet(channel_data):
 
 
 
-time.sleep(0.5)
 print("Controller starting");
 
 mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
 if mode == RCMode.SMART:
     driver = SRXL2Driver(config.input_pins[0], handle_control_packet, handle_telemetry_packet)
-    vehicle.throttle = Channel(config.throttle_channel)
-    channels = smart_buttons + (vehicle.throttle,)
 else:
     driver = PWMRCDriver(config.input_pins, handle_control_packet)
-    channels = pwm_buttons
+vehicle.mode = mode
 
 last_brake = False
 driver.start()
