@@ -105,7 +105,7 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
         self.cur_fadespeed = level/3;
 
     def animate(self, l, now = None):
-        animation = SimpleAnimation.faded_flash(100, 0, 150, self.cur_fadespeed)
+        animation = SimpleAnimation.faded_flash(100, 0, 750, self.cur_fadespeed)
         l.animate(animation, callback = self.animate, now = now, menu = True)
 
     def save(self, level):

@@ -81,7 +81,6 @@ class Config:
         self.breathe_gap = data.get("breathe_gap", 3000)
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
-        self.throttle_channel = data.get("throttle_channel",1)
         self.steering_threshold = data.get("steering_threshold", 100)
         self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
         self.hardware_button_pin = Pins.BUTTON
@@ -100,7 +99,7 @@ class Config:
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
         for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
-                "fade_speed", "use_handbrake", "throttle_channel", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
+                "fade_speed", "use_handbrake", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
                 "sleep_when_lights_on", "sleep_off_brightness", "steering_threshold", "pwm_brake_mode"):
             data[x] = getattr(self, x)
 
@@ -115,7 +114,8 @@ class Config:
         if mode == RCMode.SMART:
             cm[(self.primary_button_channel, self.primary_button_reverse)] = vehicle.primary_button
             cm[(self.handbrake_button_channel, self.handbrake_button_reverse)] = vehicle.secondary_button
-            cm[(self.throttle_channel, False)] = vehicle.throttle
+            cm[(1, False)] = vehicle.throttle
+#            cm[(2, False)] = vehicle.steering
         else:
             if self.pwm_mode == PWMMode.SW_TH:
                 cm[1, False] = vehicle.primary_button
