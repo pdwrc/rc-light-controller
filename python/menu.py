@@ -63,7 +63,7 @@ class LevelAdjusterMenuItem(MenuItem):
             self.save(self.level)
             return False
         elif event == ButtonEvent.SHORT_CLICK:
-            self.level = (self.level + 20) % 120
+            self.level = ((self.level // 20) * 20 + 20) % 120
             self.update(self.level)
         return True
 
@@ -136,9 +136,10 @@ class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
 
     def update(self, level):
         self.cur_breathegap = (level * 50) + 500;
+        # Restart animation
+        self.animate_all()
 
     def animate(self, l, now = None):
-        print("Animating")
         l.animate(BreatheAnimation(config.breathe_time, self.cur_breathegap), callback = self.animate, now = now, menu = True)
 
     def save(self, level):

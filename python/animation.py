@@ -47,7 +47,7 @@ class SimpleAnimation(Animation):
         if t > self.length:
             return None
 
-        v = None
+        v = self.sequence[0][0]
         for i, (value, ta) in enumerate(self.sequence):
             if (ta <= t and i < len(self.sequence) - 1 and t < self.sequence[i+1][1]):
                 v = value

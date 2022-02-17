@@ -57,7 +57,7 @@ class Vehicle:
     def primary_click(self, event, count = None):
         if self.in_menu:
             self.in_menu = self.menu.click(event)
-        if self.in_telemetry:
+        elif self.in_telemetry:
             self.in_telemetry = self.telemetry.click(event, count)
             print("In telemetry: " + str(self.in_telemetry))
         elif not self.moving:
@@ -66,7 +66,6 @@ class Vehicle:
                     self.light_state += 1
                 else:
                     self.light_state = LightState.LOW
-                self.update()
                 LastState.save(self.light_state)
             elif event == ButtonEvent.LONG_CLICK:
                 self.light_state = LightState.OFF
@@ -92,12 +91,10 @@ class Vehicle:
             # moving
             if event == ButtonEvent.PRESS:
                 self.lights_flash = True
-                self.update()
 
         # Moving or stopped
         if event == ButtonEvent.RELEASE and self.lights_flash:
             self.lights_flash = False
-            self.update()
 
         self.last_movement = time.ticks_ms()
 
@@ -208,9 +205,6 @@ class Vehicle:
                 l.animate(None)
             self.turning = Turn.NONE
 
-                
-
-
 
     def stop_sleeping(self):
         for l in self.lights:
@@ -218,14 +212,17 @@ class Vehicle:
         self.sleeping = False
 
     def update_breathe(self):
-        if self.moving or not self.throttle.neutral or not self.steering.neutral:
+        active = (self.moving or not self.throttle.neutral or not self.steering.neutral or self.brakes_on
+                or self.in_menu or self.in_telemetry or self.primary_button.is_pressed or self.secondary_button.is_pressed)
+
+        if active:
             self.last_movement = time.ticks_ms()
             if self.sleeping:
                 self.stop_sleeping()
 
         now = time.ticks_ms()
         if (now - self.last_movement > config.sleep_delay*1000 and not self.sleeping 
-            and not self.in_menu and not self.in_telemetry 
+            and not active
             and (self.light_state == LightState.OFF or config.sleep_when_lights_on)):
             self.sleeping = True
             for l in self.lights:

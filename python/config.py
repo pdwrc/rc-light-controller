@@ -115,7 +115,7 @@ class Config:
             cm[(self.primary_button_channel, self.primary_button_reverse)] = vehicle.primary_button
             cm[(self.handbrake_button_channel, self.handbrake_button_reverse)] = vehicle.secondary_button
             cm[(1, False)] = vehicle.throttle
-#            cm[(2, False)] = vehicle.steering
+            cm[(4, False)] = vehicle.steering
         else:
             if self.pwm_mode == PWMMode.SW_TH:
                 cm[1, False] = vehicle.primary_button

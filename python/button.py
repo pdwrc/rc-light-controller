@@ -24,6 +24,10 @@ class Button:
         self.extra_long_click_sent = 0
         self.multi_click = 0
 
+    @property
+    def is_pressed(self):
+        return self.pressed is not None
+
     def update(self, state, position = None):
         pressed = (state == ChannelState.FORWARD)
         if pressed and self.pressed is None:

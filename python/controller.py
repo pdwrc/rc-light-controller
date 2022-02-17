@@ -43,8 +43,12 @@ packet_count = 0
 input_pin = Pin(config.input_pins[0], Pin.IN)
 
 def handle_telemetry_packet(packet):
-    braking = packet.throttle > 5 and packet.power_out == 0
-    vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
+    # First telemetry packet may have a bogus voltage
+    if init:
+        braking = packet.throttle > 5 and packet.power_out == 0
+        vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
+    else:
+        print("voltage: %d" % (packet.volts_input))
 
 def handle_hardware_button():
     if hardware_button_pin is not None:

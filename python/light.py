@@ -49,7 +49,7 @@ class Light:
             else:
                 for output in self.outputs:
                     output.value(1 if level > 50 else 0)
-        self.cur_level = level
+            self.cur_level = level
 
     def set_level(self, level, menu = False):
         level = self.menu_scale(level, menu)
