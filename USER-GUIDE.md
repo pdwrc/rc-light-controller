@@ -45,9 +45,13 @@ the following combinations:
 | 3 | Switch (Aux) | Throttle |
 | 4 | Throttle | Steering |
 
+A switch channel is needed to remotely control lights and configure the
+controller.  In modes 2 and 4, controller configuration is done using Button
+1 on the controller, and remote control is not possible.
 
-In modes 2 and 4 where an Aux channel is not used as a switch, the controller
-configuration is done using a button 1 on the controller.
+The throttle channel is required for the brake light function.
+
+The steering channel is required for the turn signal function.
 
 ## Smart Mode for Spektrum Smart ESC and Receiver
 
@@ -57,7 +61,7 @@ this single cable.
 
 ## Light connections
 
-LEDs can be connected to each of the light channels.  
+LEDs can be connected to each of the output channels.  
 
 Power for the lights is drawn from the BEC via the input cable(s).  You should
 ensure that the LEDs have appropriate current limiting resistors for your BEC's
