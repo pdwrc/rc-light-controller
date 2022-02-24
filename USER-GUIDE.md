@@ -31,17 +31,20 @@ controller and the existing servo/ESC can be connected to the receiver.
 
 If you are connecting to an otherwise unused output (e.g. an Aux channel) or
 your receiver has a second output for the same channel, a straight-through
-cable with female plugs can be used.
+cable with two female plugs can be used.
 
 ## PWM Mode
 
 The controller can be connected to up to two RC channels.  These can be any of
 the following combinations:
 
-* Input 1 = Switch (Aux)
-* Input 1 = Throttle
-* Input 1 = Switch (Aux) / Input 2 = Throttle
-* Input 1 = Throttle / Input 2 = Steering
+| Mode | Input 1 | Input 2 | 
+|------|---------|---------|
+| 1 | Switch (Aux) | _unused_ |
+| 2 | Throttle | _unused_ |
+| 3 | Switch (Aux) | Throttle |
+| 4 | Throttle | Steering |
+
 
 In modes 2 and 4 where an Aux channel is not used as a switch, the controller
 configuration is done using a button 1 on the controller.
