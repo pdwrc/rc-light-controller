@@ -62,9 +62,15 @@ class Config:
             for pin in Pins.OUTPUTS:
                 self.lights.append(LightConfig(pin, 20, 100))
 
+            # First light should breathe
+            self.lights[0].breathe = 40
+
+            # Second light should flash
+            self.lights[1].flash = 100
+
             # Make the last light a brake light
             self.lights[-1].brake = 100
-            self.lights[-1].mode2 = 00
+            self.lights[-1].mode2 = 20
 
         self.pwm_mode = data.get("pwm_mode", PWMMode.TH_ST)
         self.primary_button_channel = data.get("primary_button_channel", 8)
@@ -76,9 +82,9 @@ class Config:
         self.level_channel_max = data.get("level_channel_max", 1750)
         self.sleep_delay = data.get("sleep_delay", 5)
         self.sleep_when_lights_on = data.get("sleep_when_lights_on", False)
-        self.sleep_off_brightness = data.get("sleep_off_brightness", 10)
-        self.breathe_time = data.get("breathe_time", 2000)
-        self.breathe_gap = data.get("breathe_gap", 3000)
+        self.breathe_min_brightness = data.get("breathe_min_brightness", 0)
+        self.breathe_time = data.get("breathe_time", 4000)
+        self.breathe_gap = data.get("breathe_gap", 2000)
         self.fade_speed = data.get("fade_speed", 18)
         self.use_handbrake = data.get("use_handbrake", True)
         self.steering_threshold = data.get("steering_threshold", 100)
@@ -100,7 +106,7 @@ class Config:
         data["lights"] = [ light.as_dict() for light in self.lights ]
         for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
                 "fade_speed", "use_handbrake", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
-                "sleep_when_lights_on", "sleep_off_brightness", "steering_threshold", "pwm_brake_mode"):
+                "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode"):
             data[x] = getattr(self, x)
 
         with open("config.json", "w") as fout:

@@ -50,6 +50,7 @@ class SRXL2Control(SRXL2Packet):
         self.pwm_channel_data = {}
         i = self._header_size_ + 1
 
+
         if self.command != 0:
             return 
 

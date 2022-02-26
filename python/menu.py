@@ -123,7 +123,7 @@ class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
         self.animate_all()
 
     def animate(self, l, now = None):
-        l.animate(BreatheAnimation(self.cur_breathetime, config.breathe_gap, off_brightness = config.sleep_off_brightness), callback = self.animate, now = now, menu = True)
+        l.animate(BreatheAnimation(self.cur_breathetime, config.breathe_gap, off_brightness = config.breathe_min_brightness), callback = self.animate, now = now, menu = True)
 
     def save(self, level):
         config.breathe_time = self.cur_breathetime
@@ -214,7 +214,7 @@ class Menu:
                     ToggleMenuItem(self, config, "sleep_when_lights_on"),
                     AdjustBreatheTimeMenuItem(self),
                     AdjustBreatheGapMenuItem(self),
-                    MultiSelectMenuItem(self, config, "sleep_off_brightness", [0, 10, 20, 30, 50]),
+                    MultiSelectMenuItem(self, config, "breathe_min_brightness", [0, 10, 20, 30, 50]),
                 ))
             )
         ))

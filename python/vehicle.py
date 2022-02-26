@@ -227,7 +227,7 @@ class Vehicle:
             self.sleeping = True
             for l in self.lights:
                 if l.config.breathe > 0:
-                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = config.sleep_off_brightness), now = now, loop = True)
+                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = config.breathe_min_brightness), now = now, loop = True)
                 else:
                     l.set_level(0)
 
