@@ -10,16 +10,17 @@ The controller has two control modes:
 
 1. Standard RC inputs, referred to as "PWM Mode".
 2. Spektrum Smart mode.  This requires a Spektrum Smart receiver and ESC, and
-   proides some additional functionality.
+   enables some additional functionality.
 
-The controller can be programmed and configured using either the button on the
-controller itself, or a switched AUX channel on your receiver.
+The controller can be programmed and configured using either a button on the
+controller itself, or an AUX channel on your receiver.  Ideally the AUX channel
+should have a rocker switch.
 
 # Installation 
 
-The controller can be connected to up to two inputs via 3 pin servo cables, and
-up to four outputs via 2 pin connectors.  The layout of the connectors is as
-shown below:
+The controller can be connected to up to two inputs using three pin servo cables,
+and up to four outputs using two pin connectors.  The layout of the connectors is
+as shown below:
 
 <img src="docs/v1-connector.png">
 
@@ -33,7 +34,7 @@ If you are connecting to an otherwise unused output (e.g. an Aux channel) or
 your receiver has a second output for the same channel, a straight-through
 cable with two female plugs can be used.
 
-## PWM Mode
+## Input connections in PWM Mode
 
 The controller can be connected to up to two RC channels.  These can be any of
 the following combinations:
@@ -53,11 +54,11 @@ The throttle channel is required for the brake light function.
 
 The steering channel is required for the turn signal function.
 
-## Smart Mode for Spektrum Smart ESC and Receiver
+## Input connections in Smart Mode for Spektrum Smart ESC and Receiver
 
 To use Smart mode, connect Input 1 of the controller to the throttle channel
 using a Y-cable.  Smart mode gives the controller access to all RC channels via
-this single cable.
+this single cable, so there is no need to connect any other channels.
 
 ## Light connections
 
@@ -245,7 +246,7 @@ The overall menu structure is shown below:
         * 3\. Sleep when lights on [ On / Off ]
         * 4\. Pulse duration
         * 5\. Off duration
-        * 6\. Off brightness
+        * 6\. Minimum brightness [0% / 10% / 20% / 30% / 40% / 50%]
 * 3\. Light channel 1 menu
     * 1\. (Go up)
     * 2\. Mode 1 brightness
@@ -319,11 +320,20 @@ value.  The same threshold will be used in both directions.
 
 #### Sleep animation
 
+The controller can display a "breathing" animation on some or all lights when
+the car is stationary.
+
+The brightness of each channel in sleep mode can be set individually.
+
 #### Sleep start delay
 
-This setting controls the time after the last movement before the sleep
-animation begins.  Clicking the primary button will cycle through the following
-options (0s, 5s, 10s, 30s, and 60s).
+This setting controls the time after the last movement or control activity
+before the sleep animation begins.  Clicking the primary button will cycle
+through the following options (0s, 5s, 10s, 30s, and 60s).
+
+In PWM mode, the delay is timed from the last time steering, throttle or switch
+input is made via the transmitter.  In Smart mode, the delay is time from the
+last control movement, or movement of the car.
 
 #### Sleep when lights on
 
@@ -332,15 +342,101 @@ or mode 2.  If set to "off", sleep mode will only activate when the lights are
 switched off.  If set to "on", sleep mode will activate after the specified
 delay regardless of mode.
 
+#### Sleep pulse duration
+
+This setting controls the speed of the breathe animation.  The time can be
+adjusted between 0.5s and 5.5s, in steps of 1s by clicking the primary button.
+In Smart mode, this can also be adjusted using the AVC control.  Each time a
+change is made, the animation will restart to show the effect of the current
+setting.
+
+Note that this menu will preview the animation on all light channels,
+regardless of breathe brightness setting for each channel.
+
+#### Sleep gap duration
+
+This setting controls the gap between "breaths" of the sleep animation.  The
+time can be adjusted between 0.5s and 5.5s, in steps of 1s by clicking the
+primary button.  In Smart mode, this can also be adjusted using the AVC
+control.  Each time a change is made, the animation will restart to show the
+effect of the current setting.
+
+#### Sleep minimum brightness
+
+This setting controls the brightness of the LEDs between breaths.  This is set
+as a percentage of the maximum brightness, and can be set to 0%, 10%, 20%, 30%,
+40% or 50%.
+
+#### Light channel menus
+
+A separate sub menu sets the brightnesses for each lighting channel.  As you
+cycle through the top-level menu, the lights on the selected channel will
+switch on to indicate which lights will be configured.  A long press will enter
+the sub menu for that channel.  The first item on the sub menu is "Go up", then
+each subsequent item controls the brightness of that channel in each mode.
+
+As you cycle through the menu, the current brightness setting for each mode
+will be shown on the lights.  A long press will enter the setting.  The
+brightness can be adjusted by clicking the primary button to cycle through the
+available brightnesses.  In Smart mode, the brightness can be adjusted using
+the AVC control.  A long press will save the current brightness, and return to
+the sub menu for the channel.
+
+The available modes are described below:
+
+#### Mode 1 brightness
+
+This controls the brightness of the channel in mode 1.
+
+#### Mode 2 brightness
+
+This controls the brightness of the channel in mode 2.
+
+#### Brake brightness
+
+This controls the brightness of the channel when braking.  If this is set to
+off, the lights will keep their current brightness when braking.
+
+#### Flash brightness
+
+This controls the brightness of the channel when "flash" is activated (i.e. the
+primary button is clicked when the car is moving).  Note that the flash is only
+available in Smart mode.  
+
+If this is set to off, the lights will keep their current brightness when
+flash is activated.
+
+#### Left turn brightness
+
+This controls the brightness of the channel when the left turn signals are
+activated.
+
+If set to off, the lights will keep their current brightness when turning.
+
+#### Right turn brightness
+
+This controls the brightness of the channel when the right turn signals are
+activated.
+
+If set to off, the lights will keep their current brightness when turning.
+
+#### Sleep brightness
+
+This controls the brightness of the channel when the sleep animation is
+activated.
+
+If set to off, the lights will be off when the sleep animation is activated.
+
 # Firmware updates
 
 To install new firmware, ensure that the controller is powered off, then hold
-down button 2 while connecting a USB cable to a computer.  The button can be
-released as soon as the cable is connected.  The controller should appear as a
-USB disk called "RPI-RP2".  Simply copy the provided `.uf2` file onto this
-drive.  After a few seconds, the disk will disappear, and the controller will
-restart.  You can then disconnect the USB cable.
+down button 2 while connecting the controller to a computer using a USB cable.
+The button can be released as soon as the cable is connected.  The controller
+should appear as a USB disk called "RPI-RP2".  Simply copy the provided `.uf2`
+file onto this drive.  After a few seconds, the disk will disappear, the
+controller will restart and the LED will start flashing to indicate that it is
+looking for a signal.  You can then disconnect the USB cable.
 
-
-
+Note that this requires a micro USB cable with data wires.  Many micro USB
+cables are intended only for charging devices, and do not have data wires.
 
