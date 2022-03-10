@@ -133,12 +133,12 @@ before releasing will switch back to "Off".
 The brightness level of each channel in each of Mode 1 and Mode 2 can be
 configured using the menu (see below).
 
-## Flash function (Smart mode only)
+## High beam flash function (Smart mode only)
 
 In Smart mode, the controller can detect when the vehicle is moving, and when
 it is, the function of the primary button changes so that it activates the
-"flash" brightness level for each channel for as long as the button is held.
-Again, the "flash" brightness level is configurable for each channel.
+"high beam flash" brightness level for each channel for as long as the button
+is held.  The brightness level is configurable for each channel.
 
 ## Brake lights
 
@@ -272,7 +272,7 @@ The overall menu structure is shown below:
     * 2\. Mode 1 brightness
     * 3\. Mode 2 brightness
     * 4\. Brake brightness
-    * 5\. Flash brightness
+    * 5\. High beam flash brightness
     * 6\. Left turn brightness
     * 7\. Right turn brightness
     * 8\. Sleep brightness
@@ -306,7 +306,7 @@ In PWM mode, the controller can use one of three different modes for braking:
 2. Drag brake mode — the brake lights come on for a short time whenever the throttle
    is released.
 
-This setting has no effect in Smart mode, as ESC telemetry to detect braking.
+This setting has no effect in Smart mode, as ESC telemetry is used to detect braking.
 
 #### Soft on/off speed
 
@@ -333,10 +333,10 @@ between the two modes.
 This setting controls how far the steering must be turned before the turn
 signals activate.
 
-After selecting this option, turn the steering to the desired threshold
-position and long press the primary button to use that position as the
-threshold.  The steering can be turned in either direction when setting the
-value.  The same threshold will be used in both directions.
+After selecting this option, turn the steering in either direction to the
+desired threshold position and long press the primary button to use that
+position as the threshold.  The same threshold will be used for both left and
+right directions.
 
 #### Sleep animation
 
@@ -352,7 +352,7 @@ before the sleep animation begins.  Clicking the primary button will cycle
 through the following options (0s, 5s, 10s, 30s, and 60s).
 
 In PWM mode, the delay is timed from the last time steering, throttle or switch
-input is made via the transmitter.  In Smart mode, the delay is time from the
+input is made via the transmitter.  In Smart mode, the delay is timed from the
 last control movement, or movement of the car.
 
 #### Sleep when lights on
@@ -417,14 +417,14 @@ This controls the brightness of the channel in mode 2.
 This controls the brightness of the channel when braking.  If this is set to
 off, the lights will keep their current brightness when braking.
 
-#### Flash brightness
+#### High beam flash brightness
 
-This controls the brightness of the channel when "flash" is activated (i.e. the
-primary button is clicked when the car is moving).  Note that the flash is only
+This controls the brightness of the channel when "high beam flash" is activated (i.e. the
+primary button is clicked when the car is moving).  Note that the high beam flash is only
 available in Smart mode.  
 
 If this is set to off, the lights will keep their current brightness when
-flash is activated.
+high beam flash is activated.
 
 #### Left turn brightness
 
