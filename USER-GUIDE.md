@@ -65,10 +65,10 @@ this single cable, so there is no need to connect any other channels.
 LEDs can be connected to each of the output channels.  
 
 Power for the lights is drawn from the BEC via the input cable(s).  You should
-ensure that the LEDs have appropriate current limiting resistors for your BEC's
-voltage.  It is recommend that you limit each channel to 500mA, and the total
-of all channels to 1A, although this will also depend on the spec of your BEC,
-and what else you have connected to it.
+ensure that the LEDs are designed to work with your BEC's voltage, and that the
+total current drawn does not exceed the capabilities of the BEC.
+
+The controller is designed to handle up to 500mA per channel.
 
 Note that the negative connections on the LEDs are _not_ a common ground, and
 must be wired separately for each channel.  The positive wire is common, and
