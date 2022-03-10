@@ -164,6 +164,26 @@ In PWM mode, movement is considered to be any movement of any connected control
 (button, steering or throttle).  In Smart mode, the ESC must additionally be
 reporting zero speed in order to activate.
 
+# Telemetry (Smart mode only)
+
+When in Smart mode, the controller can use telemetry information from the ESC
+to show the current battery voltage.
+
+To access the telemetry, press and hold the primary button until you see all
+lights flash once, then release the primary button.  
+
+The lights will now flash in sequence to indicate the current average cell
+voltage.  For example, if the average cell voltage is 3.85V, all lights will
+flash three times, followed by a short gap, then eight times, then a short gap,
+then five times.
+
+A further short click of the primary button will cause the controller to read
+out the lowest voltage recorded since the unit was powered on.  This is useful
+to show how much the battery voltage is dropping when under load.  
+
+Once the voltage read-out is complete, the controller returns to normal
+operation.
+
 # Configuration menu
 
 The controller is configured using a built in menu system.   
