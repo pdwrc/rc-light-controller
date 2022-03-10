@@ -61,6 +61,7 @@ class SRXL2Control(SRXL2Packet):
                 self.channel_data[n+1] = struct.unpack('<H', packet[i:i+2])[0]
                 self.pwm_channel_data[n+1] = int(1000 + (1000*self.channel_data[n+1]/0xFFFF))
                 i += 2
+        print(self.channel_data)
 
     def __repr__(self):
         s = '[CTL] %d' % self.channel_mask

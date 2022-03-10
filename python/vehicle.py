@@ -10,7 +10,7 @@ import telemetry
 import time
 from light import LightState, Light
 from animation import SimpleAnimation, BreatheAnimation
-from config import LightConfig, RCMode, config, BrakeMode
+from config import LightConfig, RCMode, config, BrakeMode, ButtonMode
 from laststate import LastState
 
 
@@ -32,7 +32,6 @@ class Vehicle:
         self.menu = menu.Menu(self)
         self.telemetry = telemetry.Telemetry(self)
         self.config = config
-        self.handbrake = False
         self.voltage = None
         self.low_voltage = None
         self.cells = None
@@ -44,7 +43,7 @@ class Vehicle:
         self.throttle = Channel()
         self.steering = SteeringChannel()
         self.primary_button = Button(self.primary_click)
-        self.secondary_button = Button(self.handbrake_click)
+        self.secondary_button = Button(self.secondary_click)
         self.mode = None
 
         self.last_movement = time.ticks_ms()
@@ -53,6 +52,7 @@ class Vehicle:
         self.startup = True
         self.braked_once = False
         self.timed_brake = 0
+        self.emergency = True
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -102,14 +102,8 @@ class Vehicle:
         self.last_movement = time.ticks_ms()
         self.startup = False
 
-    def handbrake_click(self, event, count = None):
-        if event == ButtonEvent.PRESS:
-            self.handbrake = True
-            self.update()
-        elif event == ButtonEvent.RELEASE:
-            self.handbrake = False
-            self.update()
-        print("Handbrake %s" % str(self.handbrake))
+    def secondary_click(self, event, count = None):
+        pass
 
     def level_setting(self, level):
         if self.in_menu:
@@ -246,11 +240,13 @@ class Vehicle:
 
         now = time.ticks_ms()
 
+        flash = self.lights_flash or (config.secondary_button_mode == ButtonMode.FLASH and self.secondary_button.is_pressed)
+        handbrake = config.secondary_button_mode == ButtonMode.BRAKE and self.secondary_button.is_pressed
         for light in self.lights:
             if self.in_menu or self.in_telemetry or self.sleeping or self.startup:
                 light.tick(now)
             else:
-                light.update(now, self.light_state, self.brakes_on or (self.handbrake and self.config.use_handbrake), self.lights_flash)
+                light.update(now, self.light_state, self.brakes_on or handbrake, flash, self.emergency)
 
         self.status_led.tick(now)
 

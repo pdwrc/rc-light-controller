@@ -12,9 +12,14 @@ class BrakeMode:
     SMART = 1
     LIFT_OFF_DELAY = 2
 
+class ButtonMode:
+    NONE = 0
+    BRAKE = 1
+    FLASH = 2
+
 class LightConfig:
 
-    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, breathe = 0, turn_left = 0, turn_right = 0, menu = 50):
+    def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, breathe = 0, turn_left = 0, turn_right = 0, emergency1 = 0, emergency2 = 0, menu = 50):
         self.pin = pin
         self.mode1 = mode1
         self.mode2 = mode2
@@ -23,6 +28,8 @@ class LightConfig:
         self.breathe = breathe
         self.turn_left = turn_left
         self.turn_right = turn_right
+        self.emergency1 = emergency1
+        self.emergency2 = emergency2
         self.menu = menu
 
     def as_dict(self):
@@ -35,6 +42,8 @@ class LightConfig:
             "breathe": self.breathe,
             "turn_left": self.turn_left,
             "turn_right": self.turn_right,
+            "emergency1": self.emergency1,
+            "emergency2": self.emergency2,
         }
 
 class PWMMode:
@@ -86,7 +95,7 @@ class Config:
         self.breathe_time = data.get("breathe_time", 4000)
         self.breathe_gap = data.get("breathe_gap", 2000)
         self.fade_speed = data.get("fade_speed", 18)
-        self.use_handbrake = data.get("use_handbrake", True)
+        self.secondary_button_mode = data.get("secondary_button_mode", ButtonMode.NONE)
         self.steering_threshold = data.get("steering_threshold", 100)
         self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
         self.hardware_button_pin = Pins.BUTTON
@@ -105,7 +114,7 @@ class Config:
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
         for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
-                "fade_speed", "use_handbrake", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
+                "fade_speed", "secondary_button_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
                 "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode"):
             data[x] = getattr(self, x)
 

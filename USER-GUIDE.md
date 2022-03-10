@@ -302,11 +302,13 @@ through five possible values.
 
 In Smart mode, the AVC button can also be used to set the level.
 
-#### Handbrake mode
+#### Secondary button mode
 
-This setting controls whether the secondary button will activate the brake
-lights.  When this menu item is selected, the primary button will toggle
-between the two modes. 
+This setting controls the function of the secondary button.  The available options are:
+
+* Do nothing
+* Activate brake lights
+* Activate flash mode
 
 #### Turn signal steering threshold
 
@@ -399,9 +401,7 @@ off, the lights will keep their current brightness when braking.
 
 #### Flash brightness
 
-This controls the brightness of the channel when "flash" is activated (i.e. the
-primary button is clicked when the car is moving).  Note that the flash is only
-available in Smart mode.  
+This controls the brightness of the channel when "flash" is activated.  This is done by selecting "flash" as the secondary button mode and pressing the secondary button.  In Smart mode, flash mode is activated by the primary button when the car is moving.
 
 If this is set to off, the lights will keep their current brightness when
 flash is activated.

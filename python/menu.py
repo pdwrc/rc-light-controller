@@ -206,7 +206,7 @@ class Menu:
                 MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST]),
                 MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY]),
                 AdjustFadeSpeedMenuItem(self),
-                ToggleMenuItem(self, config, "use_handbrake"),
+                MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH]),
                 SteeringThresholdMenuItem(self),
                 SubMenu(self, (
                     QuitMenu(self),
@@ -228,6 +228,8 @@ class Menu:
                 AdjustLightLevelMenuItem(self, l, "turn_left"),
                 AdjustLightLevelMenuItem(self, l, "turn_right"),
                 AdjustLightLevelMenuItem(self, l, "breathe"),
+                AdjustLightLevelMenuItem(self, l, "emergency1"),
+                AdjustLightLevelMenuItem(self, l, "emergency2"),
             ), light = l)
             self.menu.add(submenu)
 

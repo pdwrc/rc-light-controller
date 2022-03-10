@@ -121,8 +121,13 @@ vehicle.mode = mode
 
 last_brake = False
 driver.start()
+now = time.ticks_ms()
+#for l in vehicle.lights:
+#    l.animate(BreatheAnimation(2000,3000), loop = True)
+
 while True:
     driver.process()
     vehicle.update()
     handle_hardware_button()
     time.sleep_us(10)
+    #handle_control_packet({})

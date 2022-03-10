@@ -12,8 +12,6 @@ class LightState:
     LOW = 1
     HIGH = 2
 
-
-
 class Light:
 
     def __init__(self, config, no_pwm = False):
@@ -32,7 +30,7 @@ class Light:
                 pwm.duty_u16(0)
                 pwm.freq(1000)
         self.level = 0
-        self.animation = None
+        self.animations = dict()
         self.cur_level = None
 
 
@@ -57,7 +55,7 @@ class Light:
             self.show_level(level)
         self.level = level
 
-    def update(self, now, light_state, brake, flash):
+    def update(self, now, light_state, brake, flash, emergency):
         if self.animation is not None:
             self.tick(now)
         else:
@@ -75,28 +73,36 @@ class Light:
                 self.animate(SimpleAnimation.fade(self.level, new_level))
             self.set_level(new_level)
 
-    def animate(self, animation, callback = None, loop = False, now = None, menu = False):
+    def animate(self, animation, callback = None, loop = False, now = None, menu = False, priority = 0):
         if animation is not None:
+
+            start = now if now is not None else time.ticks_ms()
+            self.animations[priority] = animation
+            animation.start(now, loop, callback)
+
             self.menu_animation = menu
-            self.animation_start = now if now is not None else time.ticks_ms()
-            self.animation = animation
-            self.animation_loop = loop
-            self.animation_callback = callback
-            self.show_level(self.menu_scale(animation.value(0), menu))
+            self.show_level(self.menu_scale(animation.value(now), menu))
         else:
-            self.animation = None
+            self.animations[priority] = None
             self.show_level(self.level)
+
+    @property
+    def animation(self):
+        if len(self.animations) == 0:
+            return None
+        return self.animations[max(self.animations.keys())]
+
 
     def tick(self, now = None):
         if now is None:
             now = time.ticks_ms()
-        if self.animation is not None:
-            t = now - self.animation_start
-            value = self.animation.value(t, self.animation_loop)
+        animation = self.animation
+        if animation is not None:
+            value = self.animation.value(now, self.animation_loop)
             if value is None:
-                self.animation = None
-                if self.animation_callback is not None:
-                    self.animation_callback(self, now)
+                # Animation is complete
+                self.animations.pop(max(self.animations.keys()))
+                animation.done(now)
             else:
                 self.show_level(self.menu_scale(value, self.menu_animation))
         else:

@@ -2,7 +2,15 @@ import config
 from math import exp
 
 class Animation:
-    pass
+
+    def start(self, start, loop = False, callback = None):
+        self.start = start
+        self.loop = loop
+        self.callback = callback
+
+    def done(self, now):
+        if self.callback is not None:
+            self.callback(self, now)
 
 class BreatheAnimation(Animation):
 
@@ -13,7 +21,8 @@ class BreatheAnimation(Animation):
         self.brightness = brightness
         self.off_brightness = off_brightness
 
-    def value(self, t, loop = False):
+    def value(self, now, loop = False):
+        t = now - self.start
         if loop:
             t = t % self.length
 
@@ -40,7 +49,8 @@ class SimpleAnimation(Animation):
     def length(self):
         return self.sequence[-1][1];
 
-    def value(self, t, loop = False):
+    def value(self, now, loop = False):
+        t = now - self.start
         if loop:
             t = t % self.length
 
