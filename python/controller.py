@@ -113,6 +113,9 @@ def handle_control_packet(channel_data):
 print("Controller starting");
 
 mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
+if mode == None:
+    mode = RCMode.PWM
+    vehicle.startup_complete()
 if mode == RCMode.SMART:
     driver = SRXL2Driver(config.input_pins[0], handle_control_packet, handle_telemetry_packet)
 else:

@@ -91,7 +91,9 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
         while hardware_button_pin.value() == 1:
             time.sleep_us(10)
 
-    if last_gap_pwm or hardware_button_clicked:
+    if hardware_button_clicked:
+        return None
+    elif last_gap_pwm:
         print("Detected PWM signal")
         return RCMode.PWM
     else:
