@@ -32,6 +32,7 @@ class Light:
         self.level = 0
         self.animations = dict()
         self.cur_level = None
+        self.min_animation_priority = None
 
 
     def menu_scale(self, level, menu):
@@ -78,10 +79,10 @@ class Light:
 
             start = now if now is not None else time.ticks_ms()
             self.animations[priority] = animation
-            animation.start(now, loop, callback)
+            animation.start(start, loop, callback)
 
             self.menu_animation = menu
-            self.show_level(self.menu_scale(animation.value(now), menu))
+            self.show_level(self.menu_scale(animation.value(start), menu))
         else:
             self.animations[priority] = None
             self.show_level(self.level)
@@ -90,7 +91,10 @@ class Light:
     def animation(self):
         if len(self.animations) == 0:
             return None
-        return self.animations[max(self.animations.keys())]
+        p = max(self.animations.keys())
+        if self.min_animation_priority is None or p >= self.min_animation_priority:
+            return self.animations[p]
+        return None
 
 
     def tick(self, now = None):
@@ -98,7 +102,7 @@ class Light:
             now = time.ticks_ms()
         animation = self.animation
         if animation is not None:
-            value = self.animation.value(now, self.animation_loop)
+            value = self.animation.value(now)
             if value is None:
                 # Animation is complete
                 self.animations.pop(max(self.animations.keys()))

@@ -9,7 +9,7 @@ import menu
 import telemetry
 import time
 from light import LightState, Light
-from animation import SimpleAnimation, BreatheAnimation
+from animation import SimpleAnimation, BreatheAnimation, EmergencyFlash
 from config import LightConfig, RCMode, config, BrakeMode, ButtonMode
 from laststate import LastState
 
@@ -57,6 +57,8 @@ class Vehicle:
     def primary_click(self, event, count = None):
         if self.in_menu:
             self.in_menu = self.menu.click(event)
+            if not self.in_menu:
+                self.min_animation_priority(None)
         elif self.in_telemetry:
             self.in_telemetry = self.telemetry.click(event, count)
             print("In telemetry: " + str(self.in_telemetry))
@@ -85,6 +87,7 @@ class Vehicle:
                 elif count > 1:
                     self.menu.start()
                     self.in_menu = True
+                    self.min_animation_priority(0)
             if self.sleeping:
                 self.stop_sleeping()
         else:
@@ -203,7 +206,13 @@ class Vehicle:
     def stop_sleeping(self):
         for l in self.lights:
             l.animate(None)
+        self.min_animation_priority(None)
         self.sleeping = False
+
+    def min_animation_priority(self, priority):
+        for l in self.lights:
+            l.min_animation_priority = priority
+
 
     def update_breathe(self):
         active = (self.moving or not self.throttle.neutral or not self.steering.neutral or self.brakes_on
@@ -224,12 +233,14 @@ class Vehicle:
                     l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = config.breathe_min_brightness), now = now, loop = True)
                 else:
                     l.set_level(0)
+            self.min_animation_priority(0)
 
     def update(self):
         if not self.startup:
             if (self.moving or not self.throttle.neutral) and self.in_menu:
                 self.config.save()
                 self.in_menu = False
+                self.min_animation_priority(None)
 
             self.update_brake()
             self.update_breathe()

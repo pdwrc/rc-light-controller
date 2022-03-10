@@ -4,7 +4,7 @@ from math import exp
 class Animation:
 
     def start(self, start, loop = False, callback = None):
-        self.start = start
+        self.start_time = start
         self.loop = loop
         self.callback = callback
 
@@ -21,9 +21,9 @@ class BreatheAnimation(Animation):
         self.brightness = brightness
         self.off_brightness = off_brightness
 
-    def value(self, now, loop = False):
-        t = now - self.start
-        if loop:
+    def value(self, now):
+        t = now - self.start_time
+        if self.loop:
             t = t % self.length
 
         if t > self.length:
@@ -49,9 +49,9 @@ class SimpleAnimation(Animation):
     def length(self):
         return self.sequence[-1][1];
 
-    def value(self, now, loop = False):
-        t = now - self.start
-        if loop:
+    def value(self, now):
+        t = now - self.start_time
+        if self.loop:
             t = t % self.length
 
         if t > self.length:
@@ -105,4 +105,18 @@ class SimpleAnimation(Animation):
                 SimpleAnimation(((off, 0), (off, t-flash_length)))
             )
 
+class EmergencyFlash(Animation):
+
+    def __init__(self, brightness1 = 100, brightness2 = 0):
+        self.period = 400
+        self.flash_time = 100
+        self.brightness1 = brightness1
+        self.brightness2 = brightness2
+
+    def value(self, now):
+
+        t = (now - self.start_time) % (self.period * 2)
+        brightness = self.brightness1 if t // self.period == 0 else self.brightness2
+
+        return ((t // self.flash_time) % 2) * brightness
 

@@ -66,6 +66,8 @@ class Config:
                 x.get("breathe",0),
                 x.get("turn_left",0),
                 x.get("turn_right",0),
+                x.get("emergency1",0),
+                x.get("emergency2",0),
             ) for x in lights ]
         else:
             for pin in Pins.OUTPUTS:

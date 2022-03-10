@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode, BrakeMode
+from config import config, PWMMode, BrakeMode, ButtonMode
 import time
 from animation import SimpleAnimation, BreatheAnimation
 
