@@ -18,9 +18,9 @@ should have a rocker switch.
 
 # Installation 
 
-The controller can be connected to up to two inputs using three pin servo cables,
-and up to four outputs using two pin connectors.  The layout of the connectors is
-as shown below:
+The controller can be connected to up to two inputs using three pin servo
+cables, and up to four outputs using two pin connectors.  The layout of the
+connectors is as shown below:
 
 <img src="docs/v1-connector.png">
 
@@ -40,15 +40,15 @@ The controller can be connected to up to two RC channels.  These can be any of
 the following combinations:
 
 | Mode | Input 1 | Input 2 | 
-|------|---------|---------|
-| 1 | Switch (Aux) | _unused_ |
-| 2 | Throttle | _unused_ |
-| 3 | Switch (Aux) | Throttle |
+|------|---------|---------| 
+| 1 | Switch (Aux) | _unused_ | 
+| 2 | Throttle | _unused_ | 
+| 3 | Switch (Aux) | Throttle | 
 | 4 | Throttle | Steering |
 
 A switch channel is needed to remotely control lights and configure the
-controller.  In modes 2 and 4, controller configuration is done using Button
-1 on the controller, and remote control is not possible.
+controller.  In modes 2 and 4, controller configuration is done using Button 1
+on the controller, and remote control is not possible.
 
 The throttle channel is required for the brake light function.
 
@@ -63,6 +63,15 @@ this single cable, so there is no need to connect any other channels.
 ## Light connections
 
 LEDs can be connected to each of the output channels.  
+
+You can connect lights to the channels in any order, as the same configuration
+is available on all channels (for example, any channel can be configured to be
+brake light).  
+
+By default, channel 2 is configured with a "high beam flash", and channel 4 is
+configured as a combined tail/brake light.
+
+### Electrical details
 
 Power for the lights is drawn from the BEC via the input cable(s).  You should
 ensure that the LEDs are designed to work with your BEC's voltage, and that the
