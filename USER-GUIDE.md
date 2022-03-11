@@ -206,8 +206,7 @@ the lights and status LED will flash again.  Now release the button.  The
 lights will flash once more, to indicate that you are at the first item in the
 menu.
 
-The menu system is navigated using a series of short and long clicks.  A long
-click is one that lasts longer than 0.5 seconds.
+The menu system is navigated using a series of short and long clicks.  
 
 A short click means "next" and a long click means "select".
 
@@ -225,16 +224,16 @@ times.
 Keep clicking, and you will eventually see a single flash, indicating that you
 have cycled back to the first item.  
 
-After the flashes, some lights or all lights may stay on.  This helps show your
-current position or the current setting, and is explained below.
+After the flashes, some lights may stay on.  This helps show your current
+position or the current setting, and is explained below.
 
 Note that you don't have to wait for the flashes.  For example, click three
 times in quick succession and you will end up on the fourth item.
 
 The menu has number of sub-menus.  Long-clicking on the item in the menu will
 take you into the sub-menu.  The first item in a sub-menu is always "up" and
-will take you back into your previous position in the previous menu.  Short
-clicks will cycle you through the options in the sub-menu.
+will take you back into in the previous menu.  Short clicks will cycle you
+through the options in the sub-menu.
 
 ## Changing settings
 
@@ -251,8 +250,8 @@ first option.  So for example, PWM Brake Mode has three possible values:
 * Smart (lights 50%)
 * Drag brake (lights 100%)
 
-Short clicks will cycle through these options.  A long click will select the
-currently indicated item.
+Short clicks will cycle through these options.  A long click will select and
+save the current valueu.
 
 Some options use a different approach in order to give you a preview of the
 current selection.  This is described below, where applicable.
@@ -461,14 +460,19 @@ If set to off, the lights will be off when the sleep animation is activated.
 
 # Firmware updates
 
+Firmware updates are provided in the form of a ".uf2" file.
+
 To install new firmware, ensure that the controller is powered off, then hold
-down button 2 while connecting the controller to a computer using a USB cable.
-The button can be released as soon as the cable is connected.  The controller
-should appear as a USB disk called "RPI-RP2".  Simply copy the provided `.uf2`
-file onto this drive.  After a few seconds, the disk will disappear, the
-controller will restart and the LED will start flashing to indicate that it is
-looking for a signal.  You can then disconnect the USB cable.
+down button 2 while connecting the controller to your computer using a USB
+cable.  The button can be released as soon as the cable is connected.  The
+controller should appear as a USB disk called "RPI-RP2".  Simply copy the
+provided `.uf2` file onto this drive.  After a few seconds, the disk will
+disappear, the controller will restart and the LED will start flashing to
+indicate that it is looking for a signal.  You can then disconnect the USB
+cable.
 
 Note that this requires a micro USB cable with data wires.  Many micro USB
-cables are intended only for charging devices, and do not have data wires.
+cables are intended only for charging devices, and do not have data wires.  If
+the controller does not appear as a USB disk it is likely that you are using a
+charge-only cable.
 
