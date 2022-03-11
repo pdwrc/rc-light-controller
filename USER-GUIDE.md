@@ -24,7 +24,7 @@ connectors is as shown below:
 
 <img src="docs/v1-connector.png">
 
-Care should be taken to ensure that connectors are correct orientated.
+Care should be taken to ensure that connectors are correctly orientated.
 
 When connecting to an input that is already in use (e.g. throttle or steering)
 a Y-lead with two female and one male plug will be required, so that both the
@@ -111,9 +111,12 @@ vehicle to be completely still for five seconds.
 
 ## Inputs
 
-The controller is controlled using the switch on an AUX channel if you have
+The controller is controlled using a switch on an AUX channel if you have
 one, or Button 1 on the controller.  These two controls are equivalent, and in
-the rest of this documentation will be referred to as the primary button.
+the rest of this documentation will be referred to as the _primary button_.
+
+Button 1 is the button closest to input and output connections.  Button 2 is
+the button closest to the USB port, and is used only for firmware updates.
 
 If you are using an AUX channel, then a secondary button is available by
 clicking the button in the opposite direction (i.e. if your transmitter has a
@@ -142,13 +145,6 @@ before releasing will switch back to "Off".
 The brightness level of each channel in each of Mode 1 and Mode 2 can be
 configured using the menu (see below).
 
-## High beam flash function (Smart mode only)
-
-In Smart mode, the controller can detect when the vehicle is moving, and when
-it is, the function of the primary button changes so that it activates the
-"high beam flash" brightness level for each channel for as long as the button
-is held.  The brightness level is configurable for each channel.
-
 ## Brake lights
 
 The controller will activate brake lights when the vehicle is braking.  Which
@@ -163,6 +159,13 @@ inputs.  Exactly how this is done is configurable, and is described under the
 
 The controller can also be configured to activate brake lights when the
 secondary button is pressed.
+
+## High beam flash function (Smart mode only)
+
+In Smart mode, the controller can detect when the vehicle is moving, and when
+it is, the function of the primary button changes so that it activates the
+"high beam flash" brightness level for each channel for as long as the button
+is held.  The brightness level is configurable for each channel.
 
 ## Sleep animation
 
