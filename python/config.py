@@ -50,7 +50,7 @@ class Config:
         if lights is not None:
             self.lights = [ LightConfig(
                 x.get("pin"), 
-                x.get("mode1", 0), 
+                x.get("mode1", 20), 
                 x.get("mode2", 100), 
                 x.get("brake", 0), 
                 x.get("flash", 0), 
