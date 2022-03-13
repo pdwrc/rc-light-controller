@@ -52,7 +52,8 @@ class Vehicle:
         self.startup = True
         self.braked_once = False
         self.timed_brake = 0
-        self.emergency = True
+        self.emergency = False
+        self.update_emergency()
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -68,9 +69,11 @@ class Vehicle:
                     self.light_state += 1
                 else:
                     self.light_state = LightState.LOW
+                self.update_emergency()
                 LastState.save(self.light_state)
             elif event == ButtonEvent.LONG_CLICK:
                 self.light_state = LightState.OFF
+                self.update_emergency()
                 LastState.save(self.light_state)
             elif event == ButtonEvent.EXTRA_LONG_HOLD and count <= 2:
                 # Button has been held down for a long time, but has not been released yet
@@ -202,12 +205,30 @@ class Vehicle:
                 l.animate(None)
             self.turning = Turn.NONE
 
+    def update_emergency(self):
+        if self.light_state == LightState.HIGH:
+            self.start_emergency()
+        else:
+            self.stop_emergency()
 
     def stop_sleeping(self):
         for l in self.lights:
             l.animate(None)
         self.min_animation_priority(None)
         self.sleeping = False
+
+    def start_emergency(self):
+        if not self.emergency:
+            for l in self.lights:
+                if l.config.emergency1 > 0 or l.config.emergency2 > 0:
+                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2), priority = -1)
+            self.emergency = True
+
+    def stop_emergency(self):
+        if self.emergency:
+            for l in self.lights:
+                l.animate(None, priority = -1)
+            self.emergency = False
 
     def min_animation_priority(self, priority):
         for l in self.lights:
