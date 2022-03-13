@@ -204,6 +204,10 @@ take you into the sub-menu.  The first item in a sub-menu is always "up" and
 will take you back into your previous position in the previous menu.  Short
 clicks will cycle you through the options in the sub-menu.
 
+Tip: to quickly navigate back to the first item in a menu, quickly click the
+primary button repeatedly until the lights stop flashing.  You are now at the
+first item.
+
 ## Changing settings
 
 To change a menu item, navigate to that item as described above, and long

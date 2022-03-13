@@ -240,6 +240,7 @@ class Menu:
             l.animate(SimpleAnimation.multi_flash(1), menu = True)
         self.menu_stack = [(self.menu, 0)]
         self.clear_all()
+        self.last_wrap = time.ticks_ms()
 
     def adjust_level(self):
         pass
@@ -267,10 +268,17 @@ class Menu:
 
         if (type(cur_menu) == SubMenu):
             if event == ButtonEvent.SHORT_CLICK:
-                self.menu_pos = (self.menu_pos + 1) % cur_menu.length
-                item = cur_menu.items[self.menu_pos]
-                self.flash_all(self.menu_pos + 1)
-                item.select()
+                # If we've just wrapped back to the first item, ignore further
+                # clicks until a gap of at least 0.75s
+                if self.last_wrap is not None and time.ticks_ms() - self.last_wrap < 750:
+                    self.last_wrap = time.ticks_ms()
+                else:
+                    self.menu_pos = (self.menu_pos + 1) % cur_menu.length
+                    item = cur_menu.items[self.menu_pos]
+                    self.flash_all(self.menu_pos + 1)
+                    item.select()
+                    if self.menu_pos == 0:
+                        self.last_wrap = time.ticks_ms()
             if event == ButtonEvent.LONG_CLICK:
                 item = cur_menu.items[self.menu_pos]
                 if type(item) == SubMenu:
