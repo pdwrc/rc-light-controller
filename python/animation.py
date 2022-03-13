@@ -8,9 +8,9 @@ class Animation:
         self.loop = loop
         self.callback = callback
 
-    def done(self, now):
+    def done(self, light, now):
         if self.callback is not None:
-            self.callback(self, now)
+            self.callback(light, now)
 
 class BreatheAnimation(Animation):
 

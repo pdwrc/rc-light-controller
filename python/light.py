@@ -106,7 +106,7 @@ class Light:
             if value is None:
                 # Animation is complete
                 self.animations.pop(max(self.animations.keys()))
-                animation.done(now)
+                animation.done(self, now)
             else:
                 self.show_level(self.menu_scale(value, self.menu_animation))
         else:
