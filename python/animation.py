@@ -118,5 +118,14 @@ class EmergencyFlash(Animation):
         t = (now - self.start_time) % (self.period * 2)
         brightness = self.brightness1 if t // self.period == 0 else self.brightness2
 
-        return ((t // self.flash_time) % 2) * brightness
+        fade_time = config.config.fade_speed * 5
+        if fade_time > 0:
+            fade = min(t % self.flash_time, fade_time) / fade_time
+        else:
+            fade = 1
+        on = ((t // self.flash_time) % 2) 
+        if on == 1:
+            return fade * brightness
+        else:
+            return (1-fade) * brightness
 
