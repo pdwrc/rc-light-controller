@@ -10,7 +10,7 @@ import telemetry
 import time
 from light import LightState, Light
 from animation import SimpleAnimation, BreatheAnimation, EmergencyFlash
-from config import LightConfig, RCMode, config, BrakeMode, ButtonMode
+from config import LightConfig, RCMode, config, BrakeMode, ButtonMode, EmergencyMode
 from laststate import LastState
 
 
@@ -210,7 +210,9 @@ class Vehicle:
             self.turning = Turn.NONE
 
     def update_emergency(self):
-        if self.light_state == LightState.HIGH or self.emergency_toggle:
+        if (self.config.emergency_mode == EmergencyMode.MODE_1_2 and self.light_state != LightState.OFF
+            or self.config.emergency_mode == EmergencyMode.MODE_2 and self.light_state == LightState.HIGH 
+            or self.emergency_toggle):
             self.start_emergency()
         else:
             self.stop_emergency()

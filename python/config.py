@@ -18,6 +18,11 @@ class ButtonMode:
     FLASH = 2
     EMERGENCY_TOGGLE = 3
 
+class EmergencyMode:
+    OFF = 0
+    MODE_2 = 1
+    MODE_1_2 = 2
+
 class LightConfig:
 
     def __init__(self, pin, mode1, mode2, brake = 0, flash = 0, breathe = 0, turn_left = 0, turn_right = 0, emergency1 = 0, emergency2 = 0, menu = 50):
@@ -99,6 +104,7 @@ class Config:
         self.breathe_gap = data.get("breathe_gap", 2000)
         self.fade_speed = data.get("fade_speed", 18)
         self.secondary_button_mode = data.get("secondary_button_mode", ButtonMode.NONE)
+        self.emergency_mode = data.get("emergency_mode", EmergencyMode.OFF)
         self.steering_threshold = data.get("steering_threshold", 100)
         self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
         self.hardware_button_pin = Pins.BUTTON
@@ -117,7 +123,7 @@ class Config:
         data = {}
         data["lights"] = [ light.as_dict() for light in self.lights ]
         for x in ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
-                "fade_speed", "secondary_button_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
+                "fade_speed", "secondary_button_mode", "emergency_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
                 "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode"):
             data[x] = getattr(self, x)
 

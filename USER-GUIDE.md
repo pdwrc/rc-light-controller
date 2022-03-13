@@ -243,8 +243,9 @@ The overall menu structure is shown below:
     * 3\. Brake mode (PWM) [ Simple / Smart / Drag ]
     * 4\. Soft on/off speed
     * 5\. Secondary button mode [ None / Brake / Flash / Emergency toggle ]
-    * 6\. Turn signal steering threshold
-    * 7\. Sleep animation menu
+    * 6\. Emergency light mode [ Off / Mode 2 / Modes 1+2 ]
+    * 7\. Turn signal steering threshold
+    * 8\. Sleep animation menu
         * 1\. (Go up)
         * 2\. Start delay [0s / 5s / 10s / 30s / 60s]
         * 3\. Sleep when lights on [ On / Off ]
@@ -314,6 +315,14 @@ This setting controls the function of the secondary button.  The available optio
 * Activate brake lights
 * Activate flash mode
 * Toggle emergency lights
+
+#### Emergency light mode
+
+This setting controls when the emergency lights are active.  The options are:
+
+* Off - emergency lights are off, although they can be activated using the secondary button (see above)
+* Mode 2 - emergency lights are active in Mode 2 only
+* Modes 1 + 2 - emergency lights are active in both Modes 1 and 2
 
 #### Turn signal steering threshold
 
