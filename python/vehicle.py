@@ -53,6 +53,7 @@ class Vehicle:
         self.braked_once = False
         self.timed_brake = 0
         self.emergency = False
+        self.emergency_toggle = False
         self.update_emergency()
 
     def primary_click(self, event, count = None):
@@ -109,7 +110,10 @@ class Vehicle:
         self.startup = False
 
     def secondary_click(self, event, count = None):
-        pass
+        if config.secondary_button_mode == ButtonMode.EMERGENCY_TOGGLE:
+            if not self.in_menu and not self.in_telemetry and event == ButtonEvent.SHORT_CLICK:
+                self.emergency_toggle = not self.emergency_toggle
+                self.update_emergency()
 
     def level_setting(self, level):
         if self.in_menu:
@@ -206,7 +210,7 @@ class Vehicle:
             self.turning = Turn.NONE
 
     def update_emergency(self):
-        if self.light_state == LightState.HIGH:
+        if self.light_state == LightState.HIGH or self.emergency_toggle:
             self.start_emergency()
         else:
             self.stop_emergency()

@@ -206,7 +206,7 @@ class Menu:
                 MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST]),
                 MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY]),
                 AdjustFadeSpeedMenuItem(self),
-                MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH]),
+                MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH, ButtonMode.EMERGENCY_TOGGLE]),
                 SteeringThresholdMenuItem(self),
                 SubMenu(self, (
                     QuitMenu(self),

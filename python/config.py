@@ -16,6 +16,7 @@ class ButtonMode:
     NONE = 0
     BRAKE = 1
     FLASH = 2
+    EMERGENCY_TOGGLE = 3
 
 class LightConfig:
 

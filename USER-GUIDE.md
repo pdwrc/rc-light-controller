@@ -242,7 +242,7 @@ The overall menu structure is shown below:
     * 2\. Channel mode (PWM) [ Switch+Throttle / Throttle+Steering ]
     * 3\. Brake mode (PWM) [ Simple / Smart / Drag ]
     * 4\. Soft on/off speed
-    * 5\. Handbrake mode (brake on secondary button) [ On / Off ]
+    * 5\. Secondary button mode [ None / Brake / Flash / Emergency toggle ]
     * 6\. Turn signal steering threshold
     * 7\. Sleep animation menu
         * 1\. (Go up)
@@ -313,6 +313,7 @@ This setting controls the function of the secondary button.  The available optio
 * Do nothing
 * Activate brake lights
 * Activate flash mode
+* Toggle emergency lights
 
 #### Turn signal steering threshold
 
