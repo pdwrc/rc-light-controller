@@ -11,6 +11,8 @@ from config import config, LightConfig, RCMode
 from pwm import detect_signal_type, PWMRCDriver
 from srxl2driver import SRXL2Driver
 from animation import Animation, BreatheAnimation, SimpleAnimation
+import cli
+
 
 vehicle = veh.Vehicle(config)
 
@@ -48,7 +50,7 @@ def handle_telemetry_packet(packet):
         braking = packet.throttle > 5 and packet.power_out == 0
         vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
     else:
-        print("voltage: %d" % (packet.volts_input))
+        print("LOG voltage: %d" % (packet.volts_input))
 
 def handle_hardware_button():
     if hardware_button_pin is not None:
@@ -61,14 +63,11 @@ def handle_control_packet(channel_data):
     cm = config.channel_map(mode, vehicle)
     if not init:
         ok = True
-        for ch, reverse in cm.keys():
+        for ch in cm.keys():
             v = channel_data.get(ch)
-            if v is None and mode == RCMode.PWM and ch > 1:
-                v = 1500
-            if v is None:
-                ok = False
-            else:
+            if v is not None:
                 channel_zeros[ch] = v
+                ok = True
         # For SMART, we only calibrate after we see channel 10 disappear.
         if ok and ((10 not in channel_data and channel_data != {}) or mode == RCMode.PWM):
             good_packets += 1
@@ -81,7 +80,7 @@ def handle_control_packet(channel_data):
         for (ch, reverse), target in cm.items():
             v = channel_data.get(ch)
             if v is not None:
-                zero = channel_zeros.get(ch, 0x8000)
+                zero = channel_zeros.get(ch, 1500 if mode == RCMode.PWM else 0x8000)
                 #if ch == 1:
                 #    print("%d vs %d + %d" % (v, zero, target.threshold))
                 if v > zero + target.threshold:
@@ -110,9 +109,11 @@ def handle_control_packet(channel_data):
 
 
 
-print("Controller starting");
+print("LOG Controller starting");
 
-mode = detect_signal_type(vehicle, input_pin, hardware_button_pin)
+cli = cli.CLI(vehicle)
+
+mode = detect_signal_type(vehicle, config.input_pins, hardware_button_pin, cli)
 if mode == None:
     mode = RCMode.PWM
     vehicle.startup_complete()
@@ -128,9 +129,13 @@ now = time.ticks_ms()
 #for l in vehicle.lights:
 #    l.animate(BreatheAnimation(2000,3000), loop = True)
 
+
 while True:
     driver.process()
     vehicle.update()
     handle_hardware_button()
+    cli.process()
     time.sleep_us(10)
     #handle_control_packet({})
+
+

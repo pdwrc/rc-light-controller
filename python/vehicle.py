@@ -9,10 +9,13 @@ import menu
 import telemetry
 import time
 from light import LightState, Light
-from animation import SimpleAnimation, BreatheAnimation, EmergencyFlash
+from animation import SimpleAnimation, BreatheAnimation, EmergencyFlash, FadedFlash
 from config import LightConfig, RCMode, config, BrakeMode, ButtonMode, EmergencyMode
 from laststate import LastState
 
+
+class AnimationPriority:
+    EMERGENCY = -1
 
 class Turn:
     NONE = 0
@@ -26,7 +29,7 @@ class Vehicle:
         self.light_state = LastState.load()
         self.brakes_on = False
         self.lights_flash = False
-        self.lights = [Light(c) for c in config.lights]
+        self.lights = [Light(c, channel = n) for (n, c) in enumerate(config.lights)]
         self.in_menu = False
         self.in_telemetry = False
         self.menu = menu.Menu(self)
@@ -70,11 +73,9 @@ class Vehicle:
                     self.light_state += 1
                 else:
                     self.light_state = LightState.LOW
-                self.update_emergency()
                 LastState.save(self.light_state)
             elif event == ButtonEvent.LONG_CLICK:
                 self.light_state = LightState.OFF
-                self.update_emergency()
                 LastState.save(self.light_state)
             elif event == ButtonEvent.EXTRA_LONG_HOLD and count <= 2:
                 # Button has been held down for a long time, but has not been released yet
@@ -113,7 +114,6 @@ class Vehicle:
         if config.secondary_button_mode == ButtonMode.EMERGENCY_TOGGLE:
             if not self.in_menu and not self.in_telemetry and event == ButtonEvent.SHORT_CLICK:
                 self.emergency_toggle = not self.emergency_toggle
-                self.update_emergency()
 
     def level_setting(self, level):
         if self.in_menu:
@@ -145,7 +145,7 @@ class Vehicle:
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage
 
-    def update_brake(self):
+    def update_brake(self, reconfig = False):
         if self.mode == RCMode.PWM:
             if config.pwm_brake_mode == BrakeMode.SIMPLE:
                 self.brakes_on = self.throttle.reverse
@@ -186,13 +186,13 @@ class Vehicle:
 
             self.brakes_on = self.esc_braking or (self.quick_brake is not None and time.ticks_ms() - self.quick_brake < 250)
 
-    def update_steering(self):
+    def update_steering(self, reconfig = False):
         now = time.ticks_ms()
         if self.steering.right:
             if self.turning != Turn.RIGHT:
                 for l in self.lights:
                     if l.config.turn_right > 0:
-                        l.animate(SimpleAnimation.faded_flash(l.config.turn_right, 0, 500), now = now, loop = True)
+                        l.animate(FadedFlash(l.config.turn_right, 0, 1000), now = now, loop = True)
                         self.turning = Turn.RIGHT
                     else: 
                         l.animate(None)
@@ -200,7 +200,7 @@ class Vehicle:
             if self.turning != Turn.LEFT:
                 for l in self.lights:
                     if l.config.turn_left > 0:
-                        l.animate(SimpleAnimation.faded_flash(l.config.turn_left, 0, 500), now = now, loop = True)
+                        l.animate(FadedFlash(l.config.turn_left, 0, 1000), now = now, loop = True)
                         self.turning = Turn.LEFT
                     else: 
                         l.animate(None)
@@ -209,11 +209,11 @@ class Vehicle:
                 l.animate(None)
             self.turning = Turn.NONE
 
-    def update_emergency(self):
+    def update_emergency(self, reconfig = False):
         if (self.config.emergency_mode == EmergencyMode.MODE_1_2 and self.light_state != LightState.OFF
             or self.config.emergency_mode == EmergencyMode.MODE_2 and self.light_state == LightState.HIGH 
             or self.emergency_toggle):
-            self.start_emergency()
+            self.start_emergency(reconfig = reconfig)
         else:
             self.stop_emergency()
 
@@ -223,17 +223,19 @@ class Vehicle:
         self.min_animation_priority(None)
         self.sleeping = False
 
-    def start_emergency(self):
-        if not self.emergency:
+    def start_emergency(self, reconfig = False):
+        if not self.emergency or reconfig:
             for l in self.lights:
                 if l.config.emergency1 > 0 or l.config.emergency2 > 0:
-                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2), priority = -1)
+                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2), priority = AnimationPriority.EMERGENCY)
+                else:
+                    l.animate(None, priority = AnimationPriority.EMERGENCY)
             self.emergency = True
 
     def stop_emergency(self):
         if self.emergency:
             for l in self.lights:
-                l.animate(None, priority = -1)
+                l.animate(None, priority = AnimationPriority.EMERGENCY)
             self.emergency = False
 
     def min_animation_priority(self, priority):
@@ -241,7 +243,7 @@ class Vehicle:
             l.min_animation_priority = priority
 
 
-    def update_breathe(self):
+    def update_breathe(self, reconfig = False):
         active = (self.moving or not self.throttle.neutral or not self.steering.neutral or self.brakes_on
                 or self.in_menu or self.in_telemetry or self.primary_button.is_pressed or self.secondary_button.is_pressed)
 
@@ -251,27 +253,30 @@ class Vehicle:
                 self.stop_sleeping()
 
         now = time.ticks_ms()
-        if (now - self.last_movement > config.sleep_delay*1000 and not self.sleeping 
+        if (now - self.last_movement > config.sleep_delay*1000 
+            and (not self.sleeping or reconfig)
             and not active
             and (self.light_state == LightState.OFF or config.sleep_when_lights_on)):
             self.sleeping = True
             for l in self.lights:
                 if l.config.breathe > 0:
-                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = config.breathe_min_brightness), now = now, loop = True)
+                    l.animate(BreatheAnimation(config.breathe_time, config.breathe_gap, brightness = l.config.breathe, off_brightness = (l.config.breathe * config.breathe_min_brightness) // 100), now = now, loop = True)
                 else:
                     l.set_level(0)
+                    l.animate(None)
             self.min_animation_priority(0)
 
-    def update(self):
+    def update(self, reconfig = False):
         if not self.startup:
             if (self.moving or not self.throttle.neutral) and self.in_menu:
                 self.config.save()
                 self.in_menu = False
                 self.min_animation_priority(None)
 
-            self.update_brake()
-            self.update_breathe()
-            self.update_steering()
+            self.update_brake(reconfig = reconfig)
+            self.update_breathe(reconfig = reconfig)
+            self.update_steering(reconfig = reconfig)
+            self.update_emergency(reconfig = reconfig)
 
             if self.moving:
                 self.in_telemetry = False
@@ -287,6 +292,19 @@ class Vehicle:
                 light.update(now, self.light_state, self.brakes_on or handbrake, flash, self.emergency)
 
         self.status_led.tick(now)
+
+    def ident(self, n):
+        now = time.ticks_ms()
+        for (i, l) in enumerate(self.lights):
+            b = 75 if i == n else 0
+            l.animate(SimpleAnimation.multi_flash(3, 0, 750, 750, brightness = b), priority = 3, now = now)
+
+    def light_on(self, n, val):
+        now = time.ticks_ms()
+        self.lights[n].animate(SimpleAnimation(((val, 0), (0, 5000))), priority = 3, now = now)
+
+    def light_off(self, n):
+        self.lights[n].animate(None, priority = 3)
 
     @property
     def all_lights(self):

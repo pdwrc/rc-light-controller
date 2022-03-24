@@ -5,7 +5,7 @@ except ModuleNotFoundError:
 
 import time
 import config
-from animation import SimpleAnimation
+from animation import Fade
 
 class LightState:
     OFF = 0
@@ -14,13 +14,14 @@ class LightState:
 
 class Light:
 
-    def __init__(self, config, no_pwm = False):
+    def __init__(self, config, no_pwm = False, channel = None):
         if type(config.pin) in (list, tuple):
             self.pins = config.pin
         else:
             self.pins = [config.pin]
 
         self.config = config
+        self.channel = channel
         if no_pwm:
             self.outputs = list(Pin(pin, Pin.OUT) for pin in self.pins)
             self.pwms = None
@@ -71,7 +72,7 @@ class Light:
             else:
                 new_level = 0
             if new_level != self.level:
-                self.animate(SimpleAnimation.fade(self.level, new_level))
+                self.animate(Fade(self.level, new_level))
             self.set_level(new_level)
 
     def animate(self, animation, callback = None, loop = False, now = None, menu = False, priority = 0):
@@ -82,9 +83,10 @@ class Light:
             animation.start(start, loop, callback)
 
             self.menu_animation = menu
+            scaled = self.menu_scale(animation.value(start), menu)
             self.show_level(self.menu_scale(animation.value(start), menu))
         else:
-            self.animations[priority] = None
+            self.animations.pop(priority, None)
             self.show_level(self.level)
 
     @property
