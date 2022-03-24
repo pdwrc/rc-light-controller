@@ -5,24 +5,23 @@ except ModuleNotFoundError:
 
 import time
 import config
-from animation import SimpleAnimation
+from animation import Fade
 
 class LightState:
     OFF = 0
     LOW = 1
     HIGH = 2
 
-
-
 class Light:
 
-    def __init__(self, config, no_pwm = False):
+    def __init__(self, config, no_pwm = False, channel = None):
         if type(config.pin) in (list, tuple):
             self.pins = config.pin
         else:
             self.pins = [config.pin]
 
         self.config = config
+        self.channel = channel
         if no_pwm:
             self.outputs = list(Pin(pin, Pin.OUT) for pin in self.pins)
             self.pwms = None
@@ -32,8 +31,9 @@ class Light:
                 pwm.duty_u16(0)
                 pwm.freq(1000)
         self.level = 0
-        self.animation = None
+        self.animations = dict()
         self.cur_level = None
+        self.min_animation_priority = None
 
 
     def menu_scale(self, level, menu):
@@ -57,7 +57,7 @@ class Light:
             self.show_level(level)
         self.level = level
 
-    def update(self, now, light_state, brake, flash):
+    def update(self, now, light_state, brake, flash, emergency):
         if self.animation is not None:
             self.tick(now)
         else:
@@ -72,31 +72,43 @@ class Light:
             else:
                 new_level = 0
             if new_level != self.level:
-                self.animate(SimpleAnimation.fade(self.level, new_level))
+                self.animate(Fade(self.level, new_level))
             self.set_level(new_level)
 
-    def animate(self, animation, callback = None, loop = False, now = None, menu = False):
+    def animate(self, animation, callback = None, loop = False, now = None, menu = False, priority = 0):
         if animation is not None:
+
+            start = now if now is not None else time.ticks_ms()
+            self.animations[priority] = animation
+            animation.start(start, loop, callback)
+
             self.menu_animation = menu
-            self.animation_start = now if now is not None else time.ticks_ms()
-            self.animation = animation
-            self.animation_loop = loop
-            self.animation_callback = callback
-            self.show_level(self.menu_scale(animation.value(0), menu))
+            scaled = self.menu_scale(animation.value(start), menu)
+            self.show_level(self.menu_scale(animation.value(start), menu))
         else:
-            self.animation = None
+            self.animations.pop(priority, None)
             self.show_level(self.level)
+
+    @property
+    def animation(self):
+        if len(self.animations) == 0:
+            return None
+        p = max(self.animations.keys())
+        if self.min_animation_priority is None or p >= self.min_animation_priority:
+            return self.animations[p]
+        return None
+
 
     def tick(self, now = None):
         if now is None:
             now = time.ticks_ms()
-        if self.animation is not None:
-            t = now - self.animation_start
-            value = self.animation.value(t, self.animation_loop)
+        animation = self.animation
+        if animation is not None:
+            value = self.animation.value(now)
             if value is None:
-                self.animation = None
-                if self.animation_callback is not None:
-                    self.animation_callback(self, now)
+                # Animation is complete
+                self.animations.pop(max(self.animations.keys()))
+                animation.done(self, now)
             else:
                 self.show_level(self.menu_scale(value, self.menu_animation))
         else:

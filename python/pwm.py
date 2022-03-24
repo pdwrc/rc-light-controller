@@ -54,32 +54,40 @@ def time_pulse():
     wrap()
 
 
-def detect_signal_type(vehicle, pin, hardware_button_pin):
-    print("Detecting input signal")
-
-    sm = rp2.StateMachine(0, time_gap, freq=1_000_000, jmp_pin=pin, in_base=pin)
-    sm.active(1)
+def detect_signal_type(vehicle, pins, hardware_button_pin, cli):
+    print("LOG Detecting input signal")
 
     gaps = []
-    last_gap_pwm = None
+
+    sms = []
+    last_gap_pwm = []
+    for i, pin in enumerate(pins):
+        p = Pin(pin, Pin.IN)
+        sm = rp2.StateMachine(i, time_gap, freq=1_000_000, jmp_pin=p, in_base=p)
+        sm.active(1)
+        sms.append(sm)
+        gaps.append([])
+        last_gap_pwm.append(None)
 
     vehicle.status_led.animate(SimpleAnimation.flash(), loop = True)
     hardware_button_clicked = False
             
-    while len(gaps) < 50:
-        while sm.rx_fifo() > 0:
-            gap = (0xFFFFFFFF - sm.get()) * 2
-            # SRXL should never be longer than 9/115200 = 78us
-            # PWM should not be shorter than 1/333 - 2ms = 1ms
-            is_pwm = gap > 500
-            if is_pwm == last_gap_pwm:
-                gaps.append(gap)
-            else:
-                gaps = []
-            last_gap_pwm = is_pwm
+    while all(len(g) < 50 for g in gaps):
+        for i, sm in enumerate(sms):
+            while sm.rx_fifo() > 0:
+                gap = (0xFFFFFFFF - sm.get()) * 2
+                # SRXL should never be longer than 9/115200 = 78us
+                # PWM should not be shorter than 1/333 - 2ms = 1ms
+                is_pwm = gap > 500
+                if is_pwm == last_gap_pwm[i]:
+                    gaps[i].append(gap)
+                else:
+                    gaps[i] = []
+                last_gap_pwm[i] = is_pwm
 
         time.sleep_us(10)
-        vehicle.status_led.tick()
+        cli.process()
+        vehicle.update()
         if hardware_button_pin is not None and hardware_button_pin.value() == 1:
             hardware_button_clicked = True
             break
@@ -93,11 +101,18 @@ def detect_signal_type(vehicle, pin, hardware_button_pin):
 
     if hardware_button_clicked:
         return None
-    elif last_gap_pwm:
-        print("Detected PWM signal")
+
+    for i, g in enumerate(gaps):
+        if len(g) >= 50:
+            pwm = last_gap_pwm[i]
+            print("LOG Detected %s signal on channel %d" % ("PWM" if pwm else "SMART", i))
+            break
+
+    if pwm:
+        print("LOG Detected PWM signal")
         return RCMode.PWM
     else:
-        print("Detected SRXL2 signal")
+        print("LOG Detected SRXL2 signal")
         return RCMode.SMART
 
 class PWMRCDriver:

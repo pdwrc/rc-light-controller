@@ -235,6 +235,10 @@ take you into the sub-menu.  The first item in a sub-menu is always "up" and
 will take you back into in the previous menu.  Short clicks will cycle you
 through the options in the sub-menu.
 
+Tip: to quickly navigate back to the first item in a menu, quickly click the
+primary button repeatedly until the lights stop flashing.  You are now at the
+first item.
+
 ## Changing settings
 
 To change a menu item, navigate to that item as described above, and long
@@ -269,9 +273,10 @@ The overall menu structure is shown below:
     * 2\. Channel mode (PWM) [ Switch+Throttle / Throttle+Steering ]
     * 3\. Brake mode (PWM) [ Simple / Smart / Drag ]
     * 4\. Soft on/off speed
-    * 5\. Handbrake mode (brake on secondary button) [ On / Off ]
-    * 6\. Turn signal steering threshold
-    * 7\. Sleep animation menu
+    * 5\. Secondary button mode [ None / Brake / Flash / Emergency toggle ]
+    * 6\. Emergency light mode [ Off / Mode 2 / Modes 1+2 ]
+    * 7\. Turn signal steering threshold
+    * 8\. Sleep animation menu
         * 1\. (Go up)
         * 2\. Start delay [0s / 5s / 10s / 30s / 60s]
         * 3\. Sleep when lights on [ On / Off ]
@@ -333,11 +338,22 @@ through five possible values.
 
 In Smart mode, the AVC button can also be used to set the level.
 
-#### Handbrake mode
+#### Secondary button mode
 
-This setting controls whether the secondary button will activate the brake
-lights.  When this menu item is selected, the primary button will toggle
-between the two modes. 
+This setting controls the function of the secondary button.  The available options are:
+
+* Do nothing
+* Activate brake lights
+* Activate flash mode
+* Toggle emergency lights
+
+#### Emergency light mode
+
+This setting controls when the emergency lights are active.  The options are:
+
+* Off - emergency lights are off, although they can be activated using the secondary button (see above)
+* Mode 2 - emergency lights are active in Mode 2 only
+* Modes 1 + 2 - emergency lights are active in both Modes 1 and 2
 
 #### Turn signal steering threshold
 
@@ -430,9 +446,10 @@ off, the lights will keep their current brightness when braking.
 
 #### High beam flash brightness
 
-This controls the brightness of the channel when "high beam flash" is activated (i.e. the
-primary button is clicked when the car is moving).  Note that the high beam flash is only
-available in Smart mode.  
+This controls the brightness of the channel when "high beam flash" is activated
+This is done by selecting "flash" as the secondary button mode and pressing the
+secondary button.  In Smart mode, flash mode is activated by the primary button
+when the car is moving.
 
 If this is set to off, the lights will keep their current brightness when
 high beam flash is activated.

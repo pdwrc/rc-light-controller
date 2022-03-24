@@ -1,8 +1,8 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode, BrakeMode
+from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig
 import time
-from animation import SimpleAnimation, BreatheAnimation
+from animation import SimpleAnimation, BreatheAnimation, FadedFlash
 
 class MenuItem:
 
@@ -21,33 +21,53 @@ class MenuItem:
     def level_setting(self, level):
         pass
 
+    def spec(self):
+        return None
+
 class QuitMenu(MenuItem):
     pass
 
 class SubMenu(MenuItem):
     
-    def __init__(self, menu, items = None, light = None):
+    def __init__(self, menu, items = None, light = None, title="", config_path="None"):
         super().__init__(menu, light)
+        self.title = title
         if items is not None:
             self.items = items
         else:
             self.items = []
+        self.config_path = config_path
 
     def add(self, item):
         self.items.append(item)
-
 
     @property
     def length(self):
         return len(self.items)
 
+    def spec(self):
+        spec = {
+            "title": self.title,
+            "type": "section",
+            "items": [],
+            "config_path": self.config_path
+        }
+        if self.light is not None:
+            spec['light'] = self.light.channel
+        for item in self.items:
+            s = item.spec()
+            if s is not None:
+                spec["items"].append(s)
+
+        return spec
 
 class LevelAdjusterMenuItem(MenuItem):
 
-    def __init__(self, menu, light, initial_value):
+    def __init__(self, menu, light, initial_value, config_class = None):
         super().__init__(menu, light)
         self.level = initial_value
         self.last_input_level = None
+        self.config_class = config_class
 #        self.update(initial_value)
 
     def level_setting(self, level):
@@ -78,43 +98,71 @@ class LevelAdjusterMenuItem(MenuItem):
     def activate(self):
         self.animate_all()
 
+    def spec(self):
+        if self.config_class is None:
+            return None
+        return {
+            'type': 'level',
+            'name': self.config_class.name,
+            'title': self.config_class.title,
+            'description': self.config_class.description,
+            'min': 0,
+            'max': 100
+        }
+
+
 class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu, light, state):
-        super().__init__(menu, light, getattr(light.config, state))
+        super().__init__(menu, light, getattr(light.config, state.name))
         self.state = state
 
     def update(self, level):
         self.light.set_level(level)
 
     def save(self, level):
-        setattr(self.light.config, self.state, level)
+        setattr(self.light.config, self.state.name, level)
 
     def select(self):
         self.menu.clear_all()
         if self.light:
-            self.light.set_level(getattr(self.light.config, self.state, 0))
+            self.light.set_level(getattr(self.light.config, self.state.name, 0))
+
+    def spec(self):
+        return {
+            'type': 'light_level',
+            'title': self.state.title,
+            'description': self.state.description,
+            'name': self.state.name,
+            'light': self.light.channel
+        }
 
 class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
 
-    def __init__(self, menu):
-        super().__init__(menu, None, config.fade_speed)
-        self.cur_fadespeed = config.fade_speed
+    def __init__(self, menu, config_class = None):
+        super().__init__(menu, None, config.fade_time, config_class = FadeTimeConfig)
+        self.cur_fade_time = config.fade_time
 
     def update(self, level):
-        self.cur_fadespeed = level/3;
+        self.cur_fade_time = int(level*1.6)
 
     def animate(self, l, now = None):
-        animation = SimpleAnimation.faded_flash(100, 0, 750, self.cur_fadespeed)
+        animation = FadedFlash(100, 0, 1500, self.cur_fade_time)
         l.animate(animation, callback = self.animate, now = now, menu = True)
 
     def save(self, level):
-        config.fade_speed = self.cur_fadespeed
+        config.fade_time = self.cur_fade_time
+
+    def spec(self):
+        spec = super().spec()
+        spec['max'] = 250
+        spec['units'] = 'ms'
+        return spec
 
 class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
-        super().__init__(menu, None, config.breathe_time)
+        super().__init__(menu, None, config.breathe_time, config_class=BreatheTimeConfig)
         self.cur_breathetime = config.breathe_time;
 
     def update(self, level):
@@ -128,14 +176,21 @@ class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
     def save(self, level):
         config.breathe_time = self.cur_breathetime
 
+    def spec(self):
+        spec = super().spec()
+        spec["min"] = 50
+        spec["max"] = 6000
+        spec["units"] = "ms"
+        return spec
+
 class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
 
     def __init__(self, menu):
-        super().__init__(menu, None, config.breathe_gap)
+        super().__init__(menu, None, config.breathe_gap, config_class=BreatheGapConfig)
         self.cur_breathegap = config.breathe_gap;
 
     def update(self, level):
-        self.cur_breathegap = (level * 50) + 500;
+        self.cur_breathegap = (level * 50)
         # Restart animation
         self.animate_all()
 
@@ -145,13 +200,21 @@ class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
     def save(self, level):
         config.breathe_gap = self.cur_breathegap
 
+    def spec(self):
+        spec = super().spec()
+        spec["min"] = 0
+        spec["max"] = 6000
+        spec["units"] = "ms"
+        return spec
+
 class MultiSelectMenuItem(MenuItem):
 
-    def __init__(self, menu, obj, prop, values):
+    def __init__(self, menu, obj, prop, values, config_class = None):
         super().__init__(menu)
         self.prop = prop
         self.values = values
         self.obj = obj
+        self.config_class = config_class
         try:
             self.cur_value = values.index(getattr(obj, prop))
         except ValueError:
@@ -174,15 +237,54 @@ class MultiSelectMenuItem(MenuItem):
             return False
         return True
 
+    def spec(self):
+        if self.config_class is None:
+            return None
+        return {
+            'type': 'multi_select',
+            'title': self.config_class.title,
+            'description': self.config_class.description,
+            'name': self.prop,
+            'values': self.values,
+            'labels': self.config_class.labels
+        }
+
+class HybridMenuItem(MultiSelectMenuItem):
+
+    def __init__(self, menu, obj, prop, values, config_class = None, min_value = None, max_value = None, units = None):
+        super().__init__(menu, obj, prop, values, config_class)
+        if min_value is None:
+            self.min_value = min(values)
+        else:
+            self.min_value = min_value
+        if max_value is None:
+            self.max_value = max(values)
+        else:
+            self.max_value = max_value
+        self.units = units
+
+    def spec(self):
+        return {
+            'type': 'level',
+            'name': self.config_class.name,
+            'title': self.config_class.title,
+            'description': self.config_class.description,
+            'min': self.min_value,
+            'max': self.max_value,
+            "units": self.units
+        }
+
+
 class ToggleMenuItem(MultiSelectMenuItem):
 
-    def __init__(self, menu, obj, prop):
-        super().__init__(menu, obj, prop, [False, True])
+    def __init__(self, menu, obj, prop, config_class = None):
+        super().__init__(menu, obj, prop, [0, 1], config_class = config_class)
 
 class SteeringThresholdMenuItem(MenuItem):
 
     def __init__(self, menu):
         super().__init__(menu)
+        self.config_class = SteeringThresholdConfig
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
@@ -195,41 +297,62 @@ class SteeringThresholdMenuItem(MenuItem):
             return False
         return True
 
+    def spec(self):
+        return {
+            "type": "level",
+            "min": 0,
+            "max": 1000,
+            "name": self.config_class.name,
+            "title": self.config_class.title,
+            "description": self.config_class.description,
+        }
+
 class Menu:
 
     def __init__(self, vehicle):
         self.vehicle = vehicle
-        self.menu = SubMenu(self)
+        self.menu = SubMenu(self, title="Configuration")
         self.menu.add(QuitMenu(self))
-        self.menu.add(SubMenu(self, (
-                QuitMenu(self),
-                MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST]),
-                MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY]),
-                AdjustFadeSpeedMenuItem(self),
-                ToggleMenuItem(self, config, "use_handbrake"),
-                SteeringThresholdMenuItem(self),
-                SubMenu(self, (
+        items = [
+            QuitMenu(self)
+        ]
+        if len(config.input_pins) < 3:
+            MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST], config_class = PWMMode),
+
+        items = items + [
+            MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY], config_class = BrakeMode),
+            AdjustFadeSpeedMenuItem(self),
+            MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH, ButtonMode.EMERGENCY_TOGGLE], config_class = ButtonMode),
+            MultiSelectMenuItem(self, config, "emergency_mode", [EmergencyMode.OFF, EmergencyMode.MODE_2, EmergencyMode.MODE_1_2], config_class = EmergencyMode),
+            SteeringThresholdMenuItem(self),
+            SubMenu(self, 
+                title = "Sleep animation settings",
+                items = (
                     QuitMenu(self),
-                    MultiSelectMenuItem(self, config, "sleep_delay", [0, 5, 10, 30, 60]),
-                    ToggleMenuItem(self, config, "sleep_when_lights_on"),
+                    HybridMenuItem(self, config, "sleep_delay", [0, 5, 10, 30, 60], config_class = SleepDelayConfig, units = 's'),
+                    ToggleMenuItem(self, config, "sleep_when_lights_on", config_class = SleepWhenLightsOnMode),
                     AdjustBreatheTimeMenuItem(self),
                     AdjustBreatheGapMenuItem(self),
-                    MultiSelectMenuItem(self, config, "breathe_min_brightness", [0, 10, 20, 30, 50]),
-                ))
+                    HybridMenuItem(self, config, "breathe_min_brightness", [0, 10, 20, 30, 50], config_class = BreatheMinimumBrightnessConfig, units = '%'),
+                )
             )
+        ]
+        self.menu.add(SubMenu(self, 
+            title = "General settings",
+            items = items
         ))
-        for l in self.vehicle.lights:
-            submenu = SubMenu(self, (
+        for (i, l) in enumerate(self.vehicle.lights):
+            submenu = SubMenu(self, [
                 QuitMenu(self),
-                AdjustLightLevelMenuItem(self, l, "mode1"),
-                AdjustLightLevelMenuItem(self, l, "mode2"),
-                AdjustLightLevelMenuItem(self, l, "brake"),
-                AdjustLightLevelMenuItem(self, l, "flash"),
-                AdjustLightLevelMenuItem(self, l, "turn_left"),
-                AdjustLightLevelMenuItem(self, l, "turn_right"),
-                AdjustLightLevelMenuItem(self, l, "breathe"),
-            ), light = l)
+            ], light = l, title = "Output %d" % (i + 1), config_path="lights[%d]" % i)
+
+            for state in LightStates:
+                submenu.add(AdjustLightLevelMenuItem(self, l, state))
             self.menu.add(submenu)
+
+
+    def spec(self):
+        return self.menu.spec()
 
     def start(self):
         self.menu_pos = 0
@@ -238,6 +361,7 @@ class Menu:
             l.animate(SimpleAnimation.multi_flash(1), menu = True)
         self.menu_stack = [(self.menu, 0)]
         self.clear_all()
+        self.last_wrap = time.ticks_ms()
 
     def adjust_level(self):
         pass
@@ -265,10 +389,17 @@ class Menu:
 
         if (type(cur_menu) == SubMenu):
             if event == ButtonEvent.SHORT_CLICK:
-                self.menu_pos = (self.menu_pos + 1) % cur_menu.length
-                item = cur_menu.items[self.menu_pos]
-                self.flash_all(self.menu_pos + 1)
-                item.select()
+                # If we've just wrapped back to the first item, ignore further
+                # clicks until a gap of at least 0.75s
+                if self.last_wrap is not None and time.ticks_ms() - self.last_wrap < 750:
+                    self.last_wrap = time.ticks_ms()
+                else:
+                    self.menu_pos = (self.menu_pos + 1) % cur_menu.length
+                    item = cur_menu.items[self.menu_pos]
+                    self.flash_all(self.menu_pos + 1)
+                    item.select()
+                    if self.menu_pos == 0:
+                        self.last_wrap = time.ticks_ms()
             if event == ButtonEvent.LONG_CLICK:
                 item = cur_menu.items[self.menu_pos]
                 if type(item) == SubMenu:
@@ -282,11 +413,14 @@ class Menu:
                 if type(item) == QuitMenu:
                     if not self.go_up():
                         return False
-            print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
+            s = cur_menu.items[self.menu_pos].spec()
+            if s is not None:
+                print("LOG %s" % s.get("title"))
+            else:
+                print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
         elif isinstance(cur_menu, (LevelAdjusterMenuItem, MultiSelectMenuItem, SteeringThresholdMenuItem)):
             if not cur_menu.click(event):
                 self.go_up()
-            print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
 
         return True
 
