@@ -50,7 +50,7 @@ class Fade(Animation):
 
     def value(self, now):
         t = now - self.start_time
-        if t > self.fade_time:
+        if t > self.fade_time or self.fade_time == 0:
             return None
         return min(100, max(0, self.from_level + int(t * (self.to_level-self.from_level) / self.fade_time)))
 

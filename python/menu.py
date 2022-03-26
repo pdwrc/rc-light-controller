@@ -230,7 +230,7 @@ class MultiSelectMenuItem(MenuItem):
     def click(self, event):
         if event == ButtonEvent.SHORT_CLICK:
             self.cur_value = (self.cur_value + 1) % len(self.values)
-            print("Menu: %s Value %s" % (self.prop, self.values[self.cur_value]))
+            print("LOG Menu: %s Value %s" % (self.prop, self.values[self.cur_value]))
             self.update()
         if event == ButtonEvent.LONG_CLICK:
             setattr(self.obj, self.prop, self.values[self.cur_value])
@@ -293,7 +293,7 @@ class SteeringThresholdMenuItem(MenuItem):
                 ths = abs(pos)
                 if ths > 20:
                     config.steering_threshold = ths
-                    print("Updating steering threshold to %d" % ths)
+                    print("LOG Updating steering threshold to %d" % ths)
             return False
         return True
 
@@ -417,7 +417,7 @@ class Menu:
             if s is not None:
                 print("LOG %s" % s.get("title"))
             else:
-                print("Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
+                print("LOG Depth: %d Pos: %d" % (len(self.menu_stack), self.menu_pos))
         elif isinstance(cur_menu, (LevelAdjusterMenuItem, MultiSelectMenuItem, SteeringThresholdMenuItem)):
             if not cur_menu.click(event):
                 self.go_up()

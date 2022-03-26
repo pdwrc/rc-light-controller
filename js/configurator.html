@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Configurator</title>
+        <link href="style.css" rel="stylesheet" ></link>
+    </head>
+    <body>
+        <div class="connect-mask">
+            <div class="content">
+                <h1>PDWRC Light Controller</h1>
+                <p>
+                Connect your light controller using a USB cable, and then click below.
+                </p>
+                <button id="connect-button" class="large">
+                    Connect
+                </button>
+                <p id="connection-status">
+                </p>
+
+            </div>
+        </div>
+        <div class="main">
+            <div class="sidebar">
+                <div class="nav-tree">
+                </div>
+                <div class="buttons">
+                    <button id="close-button">Disconnect</button>
+                    <div class="button-mask"><div class="save-status">Saving...</div></div>
+                </div>
+            </div>
+            <div class="body">
+                   <div id="config"></div>
+            </div>
+        </div>
+        <script src="jquery-3.6.0.min.js" ></script>
+        <script src="configurator.js" type="module"></script>
+    </body>
+</html>

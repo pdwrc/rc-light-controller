@@ -83,8 +83,10 @@ class Light:
             animation.start(start, loop, callback)
 
             self.menu_animation = menu
-            scaled = self.menu_scale(animation.value(start), menu)
-            self.show_level(self.menu_scale(animation.value(start), menu))
+            v = animation.value(start)
+            if v is not None:
+                scaled = self.menu_scale(v, menu)
+                self.show_level(scaled)
         else:
             self.animations.pop(priority, None)
             self.show_level(self.level)

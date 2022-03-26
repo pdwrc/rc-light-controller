@@ -62,8 +62,8 @@ def handle_control_packet(channel_data):
     global good_packets
     cm = config.channel_map(mode, vehicle)
     if not init:
-        ok = True
-        for ch in cm.keys():
+        ok = False
+        for ch, rev in cm.keys():
             v = channel_data.get(ch)
             if v is not None:
                 channel_zeros[ch] = v
@@ -71,7 +71,7 @@ def handle_control_packet(channel_data):
         # For SMART, we only calibrate after we see channel 10 disappear.
         if ok and ((10 not in channel_data and channel_data != {}) or mode == RCMode.PWM):
             good_packets += 1
-            if good_packets > 10:
+            if good_packets > 30:
                 init = True
                 for l in vehicle.lights:
                     l.animate(SimpleAnimation.multi_flash(3), menu = True)
