@@ -313,13 +313,13 @@ class Menu:
         self.vehicle = vehicle
         self.menu = SubMenu(self, title="Configuration")
         self.menu.add(QuitMenu(self))
-        items = [
+        general_items = [
             QuitMenu(self)
         ]
         if len(config.input_pins) < 3:
-            MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST], config_class = PWMMode),
+            general_items.append(MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST], config_class = PWMMode))
 
-        items = items + [
+        general_items = general_items + [
             MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY], config_class = BrakeMode),
             AdjustFadeSpeedMenuItem(self),
             MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH, ButtonMode.EMERGENCY_TOGGLE], config_class = ButtonMode),
@@ -339,7 +339,7 @@ class Menu:
         ]
         self.menu.add(SubMenu(self, 
             title = "General settings",
-            items = items
+            items = general_items
         ))
         for (i, l) in enumerate(self.vehicle.lights):
             submenu = SubMenu(self, [
