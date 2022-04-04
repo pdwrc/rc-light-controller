@@ -109,6 +109,7 @@ div.nav-item {
 
 }
 
+
 .config-controls {
     //display: flex;
     display: grid;
@@ -183,5 +184,26 @@ button {
     &:hover {
         background: #fff;
         color: rgba(0,0,50,255);
+    }
+}
+
+
+
+.connect-mask {
+    a {
+        color: #fff;
+    }
+}
+
+.if-not-supported {
+    display: none;
+}
+
+.not-supported {
+    .if-not-supported {
+        display: block;
+    }
+    .if-supported {
+        display: none;
     }
 }

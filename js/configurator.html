@@ -7,6 +7,7 @@
         <div class="connect-mask">
             <div class="content">
                 <h1>PDWRC Light Controller</h1>
+                <div class="if-supported">
                 <p>
                 Connect your light controller using a USB cable, and then click below.
                 </p>
@@ -15,6 +16,18 @@
                 </button>
                 <p id="connection-status">
                 </p>
+                </div>
+                <div class="if-not-supported">
+                    <p>
+                    Unfortunately, this browser does not support the Web Serial API and so cannot be used to connect to the light controller.          </p>
+                    <p>
+                    Please try Chrome, Safari or Opera.
+                    </p>
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility">
+                        Browser compatibility
+                    </a>
+
+                </div>
 
             </div>
         </div>

@@ -217,7 +217,12 @@ function showConnectionStatus(msg) {
     $("p#connection-status").show().text(msg);
 }
 
+
 $(() => {
+    if (!("serial" in navigator)) {
+        $("body").addClass("not-supported");
+    }
+
     const button = document.getElementById("connect-button");
     button.addEventListener('click', () => {
         navigator.serial.requestPort({filters: [ {usbVendorId: 0x2e8a} ]}).then((port) => {
