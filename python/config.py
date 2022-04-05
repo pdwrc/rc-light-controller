@@ -146,8 +146,8 @@ class EmergencyFlashPeriodConfig:
     Duration of a full cycle of the emergency flash sequence (in ms)
     """
     units = "ms"
-    min_value = "100"
-    max_value = "1500"
+    min_value = 100
+    max_value = 1500
 
 class EmergencyFlashCountConfig:
     title = "Emergency Flash Count"

@@ -2,7 +2,7 @@ from button import ButtonEvent
 import light
 from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig
 import time
-from animation import SimpleAnimation, BreatheAnimation, FadedFlash
+from animation import SimpleAnimation, BreatheAnimation, FadedFlash, EmergencyFlash
 
 class MenuItem:
 
@@ -159,6 +159,24 @@ class AdjustFadeSpeedMenuItem(LevelAdjusterMenuItem):
         spec['max'] = 250
         spec['units'] = 'ms'
         return spec
+    
+class AdjustEmergencyFlashPeriodMenuItem(LevelAdjusterMenuItem):
+
+    def __init__(self, menu):
+        super().__init__(menu, None, config.fade_time, config_class = EmergencyFlashPeriodConfig)
+        self.cur_flash_period = config.emergency_flash_period
+
+    def update(self, level):
+        self.cur_flash_period = self.config_class.min_value + (level*(self.config_class.max_value - self.config_class.min_value))//100
+        self.animate_all()
+
+    def animate(self, l, now = None):
+        l.animate(EmergencyFlash(100, 100, self.cur_flash_period, config.emergency_flashes_per_side))
+
+    def save(self, level):
+        config.emergency_flash_period = self.cur_flash_period
+        for l in self.menu.vehicle.all_lights:
+            l.animate(None)
 
 class AdjustBreatheTimeMenuItem(LevelAdjusterMenuItem):
 
@@ -347,7 +365,7 @@ class Menu:
                 items = (
                     QuitMenu(self),
                     MultiSelectMenuItem(self, config, "emergency_mode", [EmergencyMode.OFF, EmergencyMode.MODE_2, EmergencyMode.MODE_1_2], config_class = EmergencyMode),
-                    LevelAdjusterMenuItem(self, config, "emergency_flash_period", config_class = EmergencyFlashPeriodConfig),
+                    AdjustEmergencyFlashPeriodMenuItem(self),
                     MultiSelectMenuItem(self, config, "emergency_flashes_per_side", list(range(1, 7)), config_class = EmergencyFlashCountConfig),
                 )
             )
