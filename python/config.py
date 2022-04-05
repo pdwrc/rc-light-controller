@@ -112,6 +112,9 @@ class BreatheGapConfig:
     description = """
         Time, in milliseconds, between "breaths" of the sleep animation.
     """
+    min_value = 0
+    max_value = 6000
+    units = "ms"
 
 class BreatheMinimumBrightnessConfig:
     title = "Sleep animation minimum brightness"
@@ -133,6 +136,29 @@ class FadeTimeConfig:
     Sets the time of the transition in milliseconds.  Set to zero for an
     instant transition.  Higher values give a softer transition, simulating
     traditional incandescent bulbs.
+    """
+
+class EmergencyFlashPeriodConfig:
+    title = "Emergency Flash Speed"
+    name = "emergency_flash_period"
+
+    description = """
+    Duration of a full cycle of the emergency flash sequence (in ms)
+    """
+    units = "ms"
+    min_value = "100"
+    max_value = "1500"
+
+class EmergencyFlashCountConfig:
+    title = "Emergency Flash Count"
+    name = "emergency_flashes_per_side"
+
+    labels = {
+        n: str(n) for n in range(1,7)
+    }
+
+    description = """
+        Number of flashes on each side of the emergency flash sequence per cycle.
     """
 
 
@@ -263,7 +289,8 @@ class Config:
 
     properties = ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
                 "fade_time", "secondary_button_mode", "emergency_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
-                "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode")
+                "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode", 
+                "emergency_flashes_per_side", "emergency_flash_period")
 
     def __init__(self, data):
         self.version = VERSION
@@ -313,6 +340,8 @@ class Config:
         self.fade_time = data.get("fade_time", 90)
         self.secondary_button_mode = data.get("secondary_button_mode", ButtonMode.NONE)
         self.emergency_mode = data.get("emergency_mode", EmergencyMode.OFF)
+        self.emergency_flash_period = data.get("emergency_flash_period", 800)
+        self.emergency_flashes_per_side = data.get("emergency_flashes_per_side", 2)
         self.steering_threshold = data.get("steering_threshold", 100)
         self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
         self.hardware_button_pin = Pins.BUTTON

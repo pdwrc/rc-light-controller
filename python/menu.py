@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig
+from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig
 import time
 from animation import SimpleAnimation, BreatheAnimation, FadedFlash
 
@@ -106,8 +106,9 @@ class LevelAdjusterMenuItem(MenuItem):
             'name': self.config_class.name,
             'title': self.config_class.title,
             'description': self.config_class.description,
-            'min': 0,
-            'max': 100
+            'min': getattr(self.config_class, 'min_value', 0),
+            'max': getattr(self.config_class, 'max_value', 100),
+            'units': getattr(self.config_class, 'units', None)
         }
 
 
@@ -200,12 +201,6 @@ class AdjustBreatheGapMenuItem(LevelAdjusterMenuItem):
     def save(self, level):
         config.breathe_gap = self.cur_breathegap
 
-    def spec(self):
-        spec = super().spec()
-        spec["min"] = 0
-        spec["max"] = 6000
-        spec["units"] = "ms"
-        return spec
 
 class MultiSelectMenuItem(MenuItem):
 
@@ -307,6 +302,18 @@ class SteeringThresholdMenuItem(MenuItem):
             "description": self.config_class.description,
         }
 
+class EmergencyFlashCountMenuItem(MultiSelectMenuItem):
+
+    def __init__(self, menu, obj, prop, config_class = None):
+        super().__init__(menu, obj, prop, [1, 2, 3, 4, 5, 6], config_class = config_class)
+
+    def update(self):
+        for l in self.menu.vehicle.all_lights:
+            l.set_level(100 * self.cur_value / len(self.values), menu = True)
+
+    def activate(self):
+        self.update()
+
 class Menu:
 
     def __init__(self, vehicle):
@@ -323,10 +330,9 @@ class Menu:
             MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY], config_class = BrakeMode),
             AdjustFadeSpeedMenuItem(self),
             MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH, ButtonMode.EMERGENCY_TOGGLE], config_class = ButtonMode),
-            MultiSelectMenuItem(self, config, "emergency_mode", [EmergencyMode.OFF, EmergencyMode.MODE_2, EmergencyMode.MODE_1_2], config_class = EmergencyMode),
             SteeringThresholdMenuItem(self),
             SubMenu(self, 
-                title = "Sleep animation settings",
+                title = "Sleep mode",
                 items = (
                     QuitMenu(self),
                     HybridMenuItem(self, config, "sleep_delay", [0, 5, 10, 30, 60], config_class = SleepDelayConfig, units = 's'),
@@ -334,6 +340,15 @@ class Menu:
                     AdjustBreatheTimeMenuItem(self),
                     AdjustBreatheGapMenuItem(self),
                     HybridMenuItem(self, config, "breathe_min_brightness", [0, 10, 20, 30, 50], config_class = BreatheMinimumBrightnessConfig, units = '%'),
+                )
+            ),
+            SubMenu(self,
+                title = "Emergency flash",
+                items = (
+                    QuitMenu(self),
+                    MultiSelectMenuItem(self, config, "emergency_mode", [EmergencyMode.OFF, EmergencyMode.MODE_2, EmergencyMode.MODE_1_2], config_class = EmergencyMode),
+                    LevelAdjusterMenuItem(self, config, "emergency_flash_period", config_class = EmergencyFlashPeriodConfig),
+                    MultiSelectMenuItem(self, config, "emergency_flashes_per_side", list(range(1, 7)), config_class = EmergencyFlashCountConfig),
                 )
             )
         ]

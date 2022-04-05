@@ -121,19 +121,20 @@ class SimpleAnimation(Animation):
 
 class EmergencyFlash(Animation):
 
-    def __init__(self, brightness1 = 100, brightness2 = 0):
-        self.period = 400
-        self.flash_time = 100
+    def __init__(self, brightness1 = 100, brightness2 = 0, period = 400, flash_count = 2):
+        self.period = period 
+        self.flash_time = self.period // (flash_count * 4) # 2 sides, on and off
         self.brightness1 = brightness1
         self.brightness2 = brightness2
 
     def value(self, now):
 
-        t = (now - self.start_time) % (self.period * 2)
-        brightness = self.brightness1 if t // self.period == 0 else self.brightness2
+        t = (now - self.start_time) % self.period
+        brightness = self.brightness1 if 2 * t // self.period == 0 else self.brightness2
 
         fade_time = config.config.fade_time
         if fade_time > 0:
+            # Time past last transition / fade_time
             fade = min(t % self.flash_time, fade_time) / fade_time
         else:
             fade = 1

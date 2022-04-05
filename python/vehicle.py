@@ -227,7 +227,7 @@ class Vehicle:
         if not self.emergency or reconfig:
             for l in self.lights:
                 if l.config.emergency1 > 0 or l.config.emergency2 > 0:
-                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2), priority = AnimationPriority.EMERGENCY)
+                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2, config.emergency_flash_period, config.emergency_flashes_per_side), priority = AnimationPriority.EMERGENCY)
                 else:
                     l.animate(None, priority = AnimationPriority.EMERGENCY)
             self.emergency = True
