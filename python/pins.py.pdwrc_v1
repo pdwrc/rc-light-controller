@@ -4,3 +4,5 @@ class Pins:
     OUTPUTS = (16,17,18,19)
     STATUS_LEDS = (12,)
     BUTTON = 11
+
+VERSION = "PDWRC v1"
