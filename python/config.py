@@ -324,6 +324,14 @@ class Config:
             self.lights[-1].brake = 100
             self.lights[-1].mode2 = 20
 
+        if hasattr(Pins, "SERVO_OUTPUTS"):
+            self.servos = []
+            for pin in Pins.SERVO_OUTPUTS:
+                self.servos.append(pin)
+        else:
+            self.servos = []
+
+
         self.pwm_mode = data.get("pwm_mode", PWMMode.SW_TH)
         self.primary_button_channel = data.get("primary_button_channel", 8)
         self.primary_button_reverse = data.get("primary_button_reverse", False)

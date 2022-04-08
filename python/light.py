@@ -116,3 +116,6 @@ class Light:
         else:
             self.show_level(self.level)
 
+    def is_on(self):
+        return self.cur_level is not None and self.cur_level > 0
+

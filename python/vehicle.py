@@ -9,6 +9,7 @@ import menu
 import telemetry
 import time
 from light import LightState, Light
+from servo import Servo
 from animation import SimpleAnimation, BreatheAnimation, EmergencyFlash, FadedFlash
 from config import LightConfig, RCMode, config, BrakeMode, ButtonMode, EmergencyMode
 from laststate import LastState
@@ -30,6 +31,7 @@ class Vehicle:
         self.brakes_on = False
         self.lights_flash = False
         self.lights = [Light(c, channel = n) for (n, c) in enumerate(config.lights)]
+        self.servos = [Servo(c, n) for (n, c) in enumerate(config.servos)]
         self.in_menu = False
         self.in_telemetry = False
         self.menu = menu.Menu(self)
@@ -290,6 +292,10 @@ class Vehicle:
                 light.tick(now)
             else:
                 light.update(now, self.light_state, self.brakes_on or handbrake, flash, self.emergency)
+        for servo in self.servos:
+            if servo.follows_light is not None:
+                servo.set_level(100 if self.lights[servo.follows_light].is_on() else 0)
+
 
         self.status_led.tick(now)
 

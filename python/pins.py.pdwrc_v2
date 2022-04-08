@@ -1,7 +1,15 @@
 class Pins:
 
     INPUTS = (21, 28, 29)
-    OUTPUTS = (16,17,18,19, 22, 23)
+    OUTPUTS = (
+        16, # PWM0
+        17, # PWM0
+        18, # PWM1
+        19, # PWM1
+    )
+    SERVO_OUTPUTS = (
+        22, # PWM3
+        23) # PWM3
     STATUS_LEDS = (11,)
     BUTTON = 12
 
