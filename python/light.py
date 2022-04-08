@@ -1,6 +1,6 @@
 try:
     from machine import Pin, PWM
-except ModuleNotFoundError:
+except ImportError:
     from machine_mock import Pin, PWM
 
 import time

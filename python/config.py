@@ -295,6 +295,7 @@ class Config:
     def __init__(self, data):
         self.version = VERSION
 
+
         self.lights = []
         lights = data.get("lights")
         if lights is not None:

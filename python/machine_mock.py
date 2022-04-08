@@ -13,3 +13,7 @@ class PWM:
 
     def duty_u16(self, u16):
         pass
+
+class UART:
+    pass
+

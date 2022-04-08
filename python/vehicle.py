@@ -1,8 +1,7 @@
 try:
     from machine import Pin, PWM
-except ModuleNotFoundError:
+except ImportError:
     from machine_mock import Pin, PWM
-
 from button import ButtonEvent, Button
 from channel import Channel, SteeringChannel
 import menu

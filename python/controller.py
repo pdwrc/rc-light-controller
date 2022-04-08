@@ -1,7 +1,10 @@
 import time
 time.sleep(1)
 
-from machine import UART, Pin, time_pulse_us
+try:
+    from machine import Pin
+except:
+    from machine_mock import Pin
 import struct
 import light
 from button import Button

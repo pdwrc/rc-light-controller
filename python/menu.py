@@ -9,6 +9,7 @@ class MenuItem:
     def __init__(self, menu, light = None):
         self.light = light
         self.menu = menu
+        self.title = None
 
     def select(self):
         self.menu.clear_all()
@@ -24,12 +25,16 @@ class MenuItem:
     def spec(self):
         return None
 
+
 class QuitMenu(MenuItem):
-    pass
+
+    def __init__(self, menu, title = "(Go up)"):
+        super().__init__(menu)
+        self.title = title
 
 class SubMenu(MenuItem):
     
-    def __init__(self, menu, items = None, light = None, title="", config_path="None"):
+    def __init__(self, menu, items = None, light = None, title="", config_path="None", repeat_text = None):
         super().__init__(menu, light)
         self.title = title
         if items is not None:
@@ -37,6 +42,7 @@ class SubMenu(MenuItem):
         else:
             self.items = []
         self.config_path = config_path
+        self.repeat_text = repeat_text
 
     def add(self, item):
         self.items.append(item)
@@ -68,7 +74,10 @@ class LevelAdjusterMenuItem(MenuItem):
         self.level = initial_value
         self.last_input_level = None
         self.config_class = config_class
+        if config_class is not None:
+            self.title = config_class.title
 #        self.update(initial_value)
+
 
     def level_setting(self, level):
         # Only adjust the level if it's changed, so we don't override the
@@ -98,6 +107,7 @@ class LevelAdjusterMenuItem(MenuItem):
     def activate(self):
         self.animate_all()
 
+
     def spec(self):
         if self.config_class is None:
             return None
@@ -117,6 +127,7 @@ class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
     def __init__(self, menu, light, state):
         super().__init__(menu, light, getattr(light.config, state.name))
         self.state = state
+        self.title = self.state.title
 
     def update(self, level):
         self.light.set_level(level)
@@ -228,6 +239,10 @@ class MultiSelectMenuItem(MenuItem):
         self.values = values
         self.obj = obj
         self.config_class = config_class
+
+        if config_class is not None:
+            self.title = config_class.title
+
         try:
             self.cur_value = values.index(getattr(obj, prop))
         except ValueError:
@@ -298,6 +313,7 @@ class SteeringThresholdMenuItem(MenuItem):
     def __init__(self, menu):
         super().__init__(menu)
         self.config_class = SteeringThresholdConfig
+        self.title = SteeringThresholdConfig.title
 
     def click(self, event):
         if event == ButtonEvent.LONG_CLICK:
@@ -337,7 +353,7 @@ class Menu:
     def __init__(self, vehicle):
         self.vehicle = vehicle
         self.menu = SubMenu(self, title="Configuration")
-        self.menu.add(QuitMenu(self))
+        self.menu.add(QuitMenu(self, title="Quit"))
         general_items = [
             QuitMenu(self)
         ]
@@ -375,9 +391,10 @@ class Menu:
             items = general_items
         ))
         for (i, l) in enumerate(self.vehicle.lights):
+            repeat_text = "As for output 1" if i > 0 else None
             submenu = SubMenu(self, [
                 QuitMenu(self),
-            ], light = l, title = "Output %d" % (i + 1), config_path="lights[%d]" % i)
+            ], light = l, title = "Output %d" % (i + 1), config_path="lights[%d]" % i, repeat_text = repeat_text)
 
             for state in LightStates:
                 submenu.add(AdjustLightLevelMenuItem(self, l, state))

@@ -1,4 +1,7 @@
-from machine import UART, Pin, time_pulse_us
+try:
+    from machine import Pin, UART
+except:
+    from machine_mock import Pin, UART
 import rp2
 import time
 from config import RCMode
