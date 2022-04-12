@@ -5,4 +5,5 @@ class Pins:
     STATUS_LEDS = (11,)
     BUTTON = 12
 
-VERSION = "PDWRC v1"
+BOARD = "PDWRC v1"
+VERSION = "dev"

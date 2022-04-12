@@ -1,7 +1,7 @@
 import json
 import os
 
-from pins import Pins, VERSION
+from pins import Pins, VERSION, BOARD
 
 class RCMode:
     PWM = 0
@@ -298,7 +298,7 @@ class Config:
 
     def __init__(self, data):
         self.version = VERSION
-
+        self.board = BOARD
 
         self.lights = []
         lights = data.get("lights")

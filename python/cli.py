@@ -31,6 +31,8 @@ class CLI:
             (cmd, params) = (s, None)
         if cmd == 'VERSION':
             print("VERSION %s" % config.version)
+        elif cmd == 'BOARD':
+            print("BOARD %s" % config.board)
         elif cmd == 'DUMPCONFIG':
             print("DUMPCONFIG " + json.dumps(config.config_data()))
         elif cmd == 'MENUSPEC':
