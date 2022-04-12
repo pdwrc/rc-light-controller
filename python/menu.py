@@ -358,7 +358,7 @@ class Menu:
             QuitMenu(self)
         ]
         if len(config.input_pins) < 3:
-            general_items.append(MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST], config_class = PWMMode))
+            general_items.append(MultiSelectMenuItem(self, config, "pwm_mode", [PWMMode.SW_TH, PWMMode.TH_ST, PWMMode.SW, PWMMode.TH], config_class = PWMMode))
 
         general_items = general_items + [
             MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY], config_class = BrakeMode),

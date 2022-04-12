@@ -276,10 +276,14 @@ class LightConfig:
 class PWMMode:
     SW_TH = 0
     TH_ST = 1
+    SW = 2
+    TH = 3
 
     labels = {
         SW_TH: "Input 1: Switch / Input 2: Throttle",
         TH_ST: "Input 1: Throttle / Input 2: Steering",
+        SW: "Input 1: Switch / Input 2: None",
+        TH: "Input 1: Throttle / Input 2: None",
     }
 
     title = "PWM Channel mode"
@@ -315,15 +319,31 @@ class Config:
             for pin in Pins.OUTPUTS:
                 self.lights.append(LightConfig(pin, 20, 100))
 
-            # First light should breathe
+            # Documented default is:
+            # 1 Headlights
+            # 2 Tail/brake
+            # 3 Always on
+            # 4 Always on
+            # 5 Left turn
+            # 6 Right turn
+
             self.lights[0].breathe = 40
+            self.lights[1].breathe = 40
 
-            # Second light should flash
-            self.lights[1].flash = 100
+            # First light should flash
+            self.lights[0].flash = 100
 
-            # Make the last light a brake light
-            self.lights[-1].brake = 100
-            self.lights[-1].mode2 = 20
+            # Brake light
+            self.lights[1].brake = 100
+            self.lights[1].mode2 = 40
+
+            if len(self.lights) > 4:
+                self.lights[4].mode1 = 0
+                self.lights[4].mode2 = 0
+                self.lights[4].turn_left = 100
+                self.lights[5].mode1 = 0
+                self.lights[5].mode2 = 0
+                self.lights[5].turn_right = 100
 
         self.pwm_mode = data.get("pwm_mode", PWMMode.SW_TH)
         self.primary_button_channel = data.get("primary_button_channel", 8)
@@ -334,12 +354,12 @@ class Config:
         self.level_channel_min = data.get("level_channel_min", 1250)
         self.level_channel_max = data.get("level_channel_max", 1750)
         self.sleep_delay = data.get("sleep_delay", 5)
-        self.sleep_when_lights_on = int(data.get("sleep_when_lights_on", 0))
+        self.sleep_when_lights_on = int(data.get("sleep_when_lights_on", 1))
         self.breathe_min_brightness = data.get("breathe_min_brightness", 0)
         self.breathe_time = data.get("breathe_time", 4000)
         self.breathe_gap = data.get("breathe_gap", 1000)
         self.fade_time = data.get("fade_time", 90)
-        self.secondary_button_mode = data.get("secondary_button_mode", ButtonMode.NONE)
+        self.secondary_button_mode = data.get("secondary_button_mode", ButtonMode.FLASH)
         self.emergency_mode = data.get("emergency_mode", EmergencyMode.OFF)
         self.emergency_flash_period = data.get("emergency_flash_period", 800)
         self.emergency_flashes_per_side = data.get("emergency_flashes_per_side", 2)
@@ -414,6 +434,11 @@ class Config:
                 cm[1, False] = vehicle.throttle
                 if len(self.input_pins) > 1:
                     cm[2, False] = vehicle.steering
+            elif self.pwm_mode == PWMMode.TH:
+                cm[1, False] = vehicle.throttle
+            elif self.pwm_mode == PWMMode.SW:
+                cm[1, False] = vehicle.primary_button
+                cm[1, True] = vehicle.secondary_button
 
         return cm
         
