@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig
+from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig, EmergencyFadeMode, ESCTemperatureAlarm, ESCTemperatureAlarmEnable
 import time
 from animation import SimpleAnimation, BreatheAnimation, FadedFlash, EmergencyFlash
 
@@ -107,6 +107,13 @@ class LevelAdjusterMenuItem(MenuItem):
     def activate(self):
         self.animate_all()
 
+    @property
+    def min_value(self):
+        return getattr(self.config_class, 'min_value', 0)
+
+    @property
+    def max_value(self):
+        return getattr(self.config_class, 'max_value', 100)
 
     def spec(self):
         if self.config_class is None:
@@ -116,11 +123,22 @@ class LevelAdjusterMenuItem(MenuItem):
             'name': self.config_class.name,
             'title': self.config_class.title,
             'description': self.config_class.description,
-            'min': getattr(self.config_class, 'min_value', 0),
-            'max': getattr(self.config_class, 'max_value', 100),
+            'min': self.min_value,
+            'max': self.max_value,
             'units': getattr(self.config_class, 'units', None)
         }
 
+class GenericLevelAdjusterMenuItem(LevelAdjusterMenuItem):
+
+    def __init__(self, menu, config, config_class):
+        super().__init__(menu, None, getattr(config, config_class.name), config_class)
+        self.config = config
+
+    def update(self, level):
+        self.level = int(self.min_value + (self.max_value - self.min_value) * level/100)
+
+    def save(self, level):
+        setattr(self.config, self.config_class.name, level)
 
 class AdjustLightLevelMenuItem(LevelAdjusterMenuItem):
 
@@ -182,7 +200,7 @@ class AdjustEmergencyFlashPeriodMenuItem(LevelAdjusterMenuItem):
         self.animate_all()
 
     def animate(self, l, now = None):
-        l.animate(EmergencyFlash(100, 100, self.cur_flash_period, config.emergency_flashes_per_side))
+        l.animate(EmergencyFlash(100, 100, self.cur_flash_period, config.emergency_flashes_per_side, bool(config.emergency_fade)))
 
     def save(self, level):
         config.emergency_flash_period = self.cur_flash_period
@@ -383,8 +401,17 @@ class Menu:
                     MultiSelectMenuItem(self, config, "emergency_mode", [EmergencyMode.OFF, EmergencyMode.MODE_2, EmergencyMode.MODE_1_2], config_class = EmergencyMode),
                     AdjustEmergencyFlashPeriodMenuItem(self),
                     MultiSelectMenuItem(self, config, "emergency_flashes_per_side", list(range(1, 7)), config_class = EmergencyFlashCountConfig),
+                    ToggleMenuItem(self, config, "emergency_fade", config_class = EmergencyFadeMode),
                 )
-            )
+            ),
+            SubMenu(self, 
+                title = "Alarms",
+                items = (
+                    QuitMenu(self),
+                    ToggleMenuItem(self, config, "esc_temperature_alarm_enable", config_class = ESCTemperatureAlarmEnable),
+                    GenericLevelAdjusterMenuItem(self, config, ESCTemperatureAlarm),
+                )
+            ),
         ]
         self.menu.add(SubMenu(self, 
             title = "General settings",

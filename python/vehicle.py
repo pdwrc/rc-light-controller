@@ -15,6 +15,7 @@ from laststate import LastState
 
 class AnimationPriority:
     EMERGENCY = -1
+    TEMP_ALARM = 1
 
 class Turn:
     NONE = 0
@@ -57,6 +58,7 @@ class Vehicle:
         self.emergency = False
         self.emergency_toggle = False
         self.update_emergency()
+        self.over_temp = False
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -124,7 +126,7 @@ class Vehicle:
                 return c
         return None
 
-    def set_state(self, moving, brakes, voltage):
+    def set_state(self, moving, brakes, voltage, temperature):
 
         if moving and not self.moving:
             # Just started moving
@@ -143,6 +145,21 @@ class Vehicle:
         self.voltage = voltage
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage
+
+        self.update_over_temp(temperature - 23)
+
+    def update_over_temp(self, over):
+        now = time.ticks_ms()
+        if over > 1 and not self.over_temp:
+            self.over_temp = True
+            print("Starting over temp")
+            for l in self.lights:
+                l.animate(SimpleAnimation.multi_flash(3,500,100,100), now =now, loop = True, priority=AnimationPriority.TEMP_ALARM)
+        elif over <= 0 and self.over_temp:
+            print("Ending over temp")
+            self.over_temp = False
+            for l in self.lights:
+                l.animate(None, priority = AnimationPriority.TEMP_ALARM)
 
     def update_brake(self, reconfig = False):
         if self.mode == RCMode.PWM:
@@ -226,7 +243,7 @@ class Vehicle:
         if not self.emergency or reconfig:
             for l in self.lights:
                 if l.config.emergency1 > 0 or l.config.emergency2 > 0:
-                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2, config.emergency_flash_period, config.emergency_flashes_per_side), priority = AnimationPriority.EMERGENCY)
+                    l.animate(EmergencyFlash(l.config.emergency1, l.config.emergency2, config.emergency_flash_period, config.emergency_flashes_per_side, bool(self.config.emergency_fade)), priority = AnimationPriority.EMERGENCY)
                 else:
                     l.animate(None, priority = AnimationPriority.EMERGENCY)
             self.emergency = True

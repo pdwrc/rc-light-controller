@@ -161,6 +161,42 @@ class EmergencyFlashCountConfig:
         Number of flashes on each side of the emergency flash sequence per cycle.
     """
 
+class EmergencyFadeMode:
+    labels = {
+        0: "Do not apply fade to emergency flash sequence",
+        1: "Apply fade to emergency flash sequence",
+    }
+
+    title = "Emergency fade"
+
+    description = """
+    Set whether the fade speed setting applies to emergency flash mode.
+    """
+
+class ESCTemperatureAlarmEnable:
+    title = "ESC Alarm Enable"
+    name = "esc_temperature_alarm_enable"
+
+    labels = {
+        0: "Disabled",
+        1: "Enabled",
+    }
+
+    description = """
+        Enable / Disable ESC temperature alarm
+    """
+
+class ESCTemperatureAlarm:
+    title = "ESC Temperature Alarm"
+    name = "esc_temperature_alarm"
+
+    description = """
+        Temperature, in C, for ESC temperature alarm.
+    """
+    min_value = 50
+    max_value = 120
+    units = "C"
+
 
 class LightState:
 
@@ -294,7 +330,7 @@ class Config:
     properties = ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
                 "fade_time", "secondary_button_mode", "emergency_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
                 "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode", 
-                "emergency_flashes_per_side", "emergency_flash_period")
+                "emergency_flashes_per_side", "emergency_flash_period", "emergency_fade", "esc_temperature_alarm", "esc_temperature_alarm_enable")
 
     def __init__(self, data):
         self.version = VERSION
@@ -363,8 +399,11 @@ class Config:
         self.emergency_mode = data.get("emergency_mode", EmergencyMode.OFF)
         self.emergency_flash_period = data.get("emergency_flash_period", 800)
         self.emergency_flashes_per_side = data.get("emergency_flashes_per_side", 2)
+        self.emergency_fade = data.get("emergency_fade", 0)
         self.steering_threshold = data.get("steering_threshold", 100)
         self.pwm_brake_mode = data.get("pwm_brake_mode", BrakeMode.SMART)
+        self.esc_temperature_alarm = data.get("esc_temperature_alarm", 75)
+        self.esc_temperature_alarm_enable = data.get("esc_temperature_alarm_enable", 0)
         self.hardware_button_pin = Pins.BUTTON
         self.input_pins = Pins.INPUTS
         self.status_led_pins = Pins.STATUS_LEDS

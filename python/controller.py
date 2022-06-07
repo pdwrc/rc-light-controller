@@ -51,7 +51,7 @@ def handle_telemetry_packet(packet):
     # First telemetry packet may have a bogus voltage
     if init:
         braking = packet.throttle > 5 and packet.power_out == 0
-        vehicle.set_state(packet.rpm > 0, braking, packet.volts_input)
+        vehicle.set_state(packet.rpm > 0, braking, packet.volts_input, packet.temp_fet)
     else:
         print("LOG voltage: %d" % (packet.volts_input))
 
