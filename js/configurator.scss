@@ -29,6 +29,12 @@ div.sidebar {
         padding: 20px 0;
     }
 
+    .version {
+        padding: 5px;
+        text-align: right;
+        font-size: x-small;
+        flex-grow:0;
+    }
 
     .buttons {
         display: flex;

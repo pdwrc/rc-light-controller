@@ -245,6 +245,16 @@ $(() => {
                     loadConfigValues(controls, config);
                     selectFirstSection();
 
+                    var version = await lcSerial.doCommand("VERSION");
+                    var board = "";
+                    try {
+                        // not supported on old boards
+                        board = await lcSerial.doCommand("BOARD");
+                    }
+                    catch {
+                    }
+                    $("div.version").text(board + " " + version);
+
                     hideConnectMask();
 
                     const container = $("div#buttons");
