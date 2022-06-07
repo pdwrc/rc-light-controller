@@ -85,7 +85,7 @@ class SimpleAnimation(Animation):
         for i in range(n):
             seq.append((a, start + (on+off) * i))
             seq.append((b, start + (on+off) * i + on))
-        seq.append((b,n * (on+off) + off))
+        seq.append((b,start + n * (on+off) + off))
         return SimpleAnimation(seq)
 
     def flash():
