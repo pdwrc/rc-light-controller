@@ -89,7 +89,10 @@ class Light:
                 self.show_level(scaled)
         else:
             self.animations.pop(priority, None)
-            self.show_level(self.level)
+            if self.animation is None:
+                self.show_level(self.level)
+            else:
+                self.tick(now)
 
     @property
     def animation(self):
