@@ -6,7 +6,7 @@ class ChannelState:
     REVERSE = -1
 
 class Channel:
-    threshold = 75
+    threshold = 60
 
     def __init__(self):
         self.state = ChannelState.NEUTRAL
