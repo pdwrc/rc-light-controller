@@ -381,6 +381,7 @@ class Menu:
         general_items = general_items + [
             MultiSelectMenuItem(self, config, "pwm_brake_mode", [BrakeMode.SIMPLE, BrakeMode.SMART, BrakeMode.LIFT_OFF_DELAY], config_class = BrakeMode),
             AdjustFadeSpeedMenuItem(self),
+            ToggleMenuItem(self, config, "primary_button_reverse", config_class = ButtonModeReverse),
             MultiSelectMenuItem(self, config, "secondary_button_mode", [ButtonMode.NONE, ButtonMode.BRAKE, ButtonMode.FLASH, ButtonMode.EMERGENCY_TOGGLE], config_class = ButtonMode),
             SteeringThresholdMenuItem(self),
             SubMenu(self, 

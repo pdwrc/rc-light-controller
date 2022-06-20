@@ -53,6 +53,18 @@ class ButtonMode:
     </ul>
     """
 
+class ButtonModeReverse:
+    labels = {
+        0: "Normal",
+        1: "Reverse",
+    }
+
+    title = "Button reverse"
+
+    description = """
+    <p>Swap primary and secondary buttons.</p>
+    """
+
 class EmergencyMode:
     OFF = 0
     MODE_2 = 1
@@ -327,7 +339,7 @@ class PWMMode:
 
 class Config:
 
-    properties = ("primary_button_channel", "primary_button_reverse", "handbrake_button_channel", "handbrake_button_reverse", 
+    properties = ("primary_button_channel", "primary_button_reverse", 
                 "fade_time", "secondary_button_mode", "emergency_mode", "pwm_mode", "breathe_time", "breathe_gap", "sleep_delay",
                 "sleep_when_lights_on", "breathe_min_brightness", "steering_threshold", "pwm_brake_mode", 
                 "emergency_flashes_per_side", "emergency_flash_period", "emergency_fade", "esc_temperature_alarm", "esc_temperature_alarm_enable")
@@ -383,9 +395,7 @@ class Config:
 
         self.pwm_mode = data.get("pwm_mode", PWMMode.SW_TH)
         self.primary_button_channel = data.get("primary_button_channel", 8)
-        self.primary_button_reverse = data.get("primary_button_reverse", False)
-        self.handbrake_button_channel = data.get("handbrake_button_channel", 8)
-        self.handbrake_button_reverse = data.get("handbrake_button_reverse", True)
+        self.primary_button_reverse = 1 if bool(data.get("primary_button_reverse", False)) else 0
         self.level_channel = data.get("level_channel", 6)
         self.level_channel_min = data.get("level_channel_min", 1250)
         self.level_channel_max = data.get("level_channel_max", 1750)
@@ -456,8 +466,8 @@ class Config:
     def channel_map(self, mode, vehicle):
         cm = {}
         if mode == RCMode.SMART:
-            cm[(self.primary_button_channel, self.primary_button_reverse)] = vehicle.primary_button
-            cm[(self.handbrake_button_channel, self.handbrake_button_reverse)] = vehicle.secondary_button
+            cm[(self.primary_button_channel, bool(self.primary_button_reverse))] = vehicle.primary_button
+            cm[(self.primary_button_channel, not bool(self.primary_button_reverse))] = vehicle.secondary_button
             cm[(1, False)] = vehicle.throttle
             cm[(4, False)] = vehicle.steering
         else:
