@@ -1,6 +1,6 @@
 from button import ButtonEvent
 import light
-from config import config, PWMMode, BrakeMode, ButtonMode, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig, EmergencyFadeMode, ESCTemperatureAlarm, ESCTemperatureAlarmEnable
+from config import config, PWMMode, BrakeMode, ButtonMode, ButtonModeReverse, EmergencyMode, LightStates, SleepWhenLightsOnMode, FadeTimeConfig, SleepDelayConfig, BreatheTimeConfig, BreatheGapConfig, SteeringThresholdConfig, BreatheMinimumBrightnessConfig, EmergencyFlashPeriodConfig, EmergencyFlashCountConfig, EmergencyFadeMode, ESCTemperatureAlarm, ESCTemperatureAlarmEnable, EXTTemperatureAlarm, EXTTemperatureAlarmEnable
 import time
 from animation import SimpleAnimation, BreatheAnimation, FadedFlash, EmergencyFlash
 
@@ -409,6 +409,8 @@ class Menu:
                 title = "Alarms",
                 items = (
                     QuitMenu(self),
+                    ToggleMenuItem(self, config, "ext_temperature_alarm_enable", config_class = EXTTemperatureAlarmEnable),
+                    GenericLevelAdjusterMenuItem(self, config, EXTTemperatureAlarm),
                     ToggleMenuItem(self, config, "esc_temperature_alarm_enable", config_class = ESCTemperatureAlarmEnable),
                     GenericLevelAdjusterMenuItem(self, config, ESCTemperatureAlarm),
                 )

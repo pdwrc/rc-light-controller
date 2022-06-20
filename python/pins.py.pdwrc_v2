@@ -4,6 +4,7 @@ class Pins:
     OUTPUTS = (16, 17, 18, 19, (23, 24), 22)
     STATUS_LEDS = (11,)
     BUTTON = 12
+    THERM = 26
 
 BOARD = "PDWRC v2"
 VERSION = "dev"

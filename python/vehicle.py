@@ -15,7 +15,8 @@ from laststate import LastState
 
 class AnimationPriority:
     EMERGENCY = -1
-    TEMP_ALARM = 1
+    ESC_TEMP_ALARM = 1
+    EXT_TEMP_ALARM = 2
 
 class Turn:
     NONE = 0
@@ -58,7 +59,10 @@ class Vehicle:
         self.emergency = False
         self.emergency_toggle = False
         self.update_emergency()
-        self.over_temp = False
+        self.esc_over_temp = False
+        self.esc_temperature = None
+        self.ext_over_temp = False
+        self.ext_temperature = None
 
     def primary_click(self, event, count = None):
         if self.in_menu:
@@ -67,7 +71,6 @@ class Vehicle:
                 self.min_animation_priority(None)
         elif self.in_telemetry:
             self.in_telemetry = self.telemetry.click(event, count)
-            print("In telemetry: " + str(self.in_telemetry))
         elif not self.moving:
             if event == ButtonEvent.SHORT_CLICK:
                 if self.light_state < LightState.HIGH:
@@ -146,20 +149,37 @@ class Vehicle:
         if self.low_voltage is None or voltage < self.low_voltage:
             self.low_voltage = voltage
 
-        self.update_over_temp(temperature - 23)
+        self.esc_temperature = temperature
+        self.update_over_temp(temperature - config.esc_temperature_alarm)
 
-    def update_over_temp(self, over):
+    def update_over_temp(self):
+        if self.esc_temperature is not None:
+            esc_over = self.esc_temperature - config.esc_temperature_alarm
+        else:
+            esc_over = 0
+        if self.ext_temperature is not None:
+            ext_over = self.ext_temperature - config.ext_temperature_alarm
+        else:
+            ext_over = 0
+
         now = time.ticks_ms()
-        if over > 1 and not self.over_temp:
-            self.over_temp = True
-            print("Starting over temp")
+        if esc_over > 1 and not self.esc_over_temp and config.esc_temperature_alarm_enable:
+            self.esc_over_temp = True
             for l in self.lights:
-                l.animate(SimpleAnimation.multi_flash(3,500,100,100), now =now, loop = True, priority=AnimationPriority.TEMP_ALARM)
-        elif over <= 0 and self.over_temp:
-            print("Ending over temp")
-            self.over_temp = False
+                l.animate(SimpleAnimation.multi_flash(3,500,100,100), now =now, loop = True, priority=AnimationPriority.ESC_TEMP_ALARM)
+        elif esc_over <= 0 and self.esc_over_temp:
+            self.esc_over_temp = False
             for l in self.lights:
-                l.animate(None, priority = AnimationPriority.TEMP_ALARM)
+                l.animate(None, priority = AnimationPriority.ESC_TEMP_ALARM)
+
+        if ext_over > 1 and not self.ext_over_temp and config.ext_temperature_alarm_enable:
+            self.ext_over_temp = True
+            for l in self.lights:
+                l.animate(SimpleAnimation.multi_flash(2,500,100,100), now =now, loop = True, priority=AnimationPriority.EXT_TEMP_ALARM)
+        elif ext_over <= 0:
+            self.ext_over_temp = False
+            for l in self.lights + [self.status_led]:
+                l.animate(None, priority = AnimationPriority.EXT_TEMP_ALARM)
 
     def update_brake(self, reconfig = False):
         if self.mode == RCMode.PWM:
@@ -293,6 +313,7 @@ class Vehicle:
             self.update_breathe(reconfig = reconfig)
             self.update_steering(reconfig = reconfig)
             self.update_emergency(reconfig = reconfig)
+            self.update_over_temp()
 
             if self.moving:
                 self.in_telemetry = False

@@ -15,7 +15,7 @@ from pwm import detect_signal_type, PWMRCDriver
 from srxl2driver import SRXL2Driver
 from animation import Animation, BreatheAnimation, SimpleAnimation
 import cli
-
+import therm
 
 vehicle = veh.Vehicle(config)
 
@@ -111,6 +111,9 @@ def handle_control_packet(channel_data):
         packet_count = 0
 
 
+def sample_temperature():
+    temp = therm.get_value()
+    vehicle.ext_temperature = temp
 
 print("LOG Controller starting");
 
@@ -132,11 +135,13 @@ now = time.ticks_ms()
 #for l in vehicle.lights:
 #    l.animate(BreatheAnimation(2000,3000), loop = True)
 
+therm.init()
 
 while True:
     driver.process()
     vehicle.update()
     handle_hardware_button()
+    sample_temperature()
     cli.process()
     time.sleep_us(10)
     #handle_control_packet({})
